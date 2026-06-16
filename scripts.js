@@ -45,15 +45,12 @@ function goStep(n) {
 }
 
 function goStep2() {
-  var ni = document.getElementById('nationalId').value.trim();
   var nm = document.getElementById('name').value.trim();
   var ph = document.getElementById('phone').value.trim();
   var ok = true;
-  ok = _v('nationalId', /^\d{14}$/.test(ni), 'رقم قومي غير صحيح (14 رقم)') && ok;
   ok = _v('name',       nm.length >= 4,       'الاسم قصير — 4 أحرف على الأقل') && ok;
   ok = _v('phone',      /^01[0-9]{9}$/.test(ph), 'رقم الهاتف غير صحيح') && ok;
   if(!ok) return;
-  APP.nationalId = ni;
   APP.name       = nm;
   APP.phone      = ph;
   goStep(2);
@@ -228,7 +225,6 @@ function submitSurvey() {
 
   callAPI('saveSurvey', {
     payload: {
-      nationalId:   APP.nationalId,
       name:         APP.name,
       phone:        APP.phone,
       category:     APP.category,
@@ -363,7 +359,6 @@ function submitComplaint() {
   })).then(function(imgs) {
     callAPI('saveComplaint', {
       payload: {
-        nationalId:   APP.nationalId,
         name:         APP.name,
         phone:        APP.phone,
         category:     APP.category,
@@ -422,7 +417,7 @@ function showSuccess(id, type) {
 
 function resetApp() {
   Object.assign(APP, {
-    step:1, nationalId:'', name:'', phone:'',
+    step:1, name:'', phone:'',
     category:'', providerCode:'', providerName:'',
     surveyAnswers:{}, audioBase64:null, imageFiles:[]
   });
@@ -431,7 +426,7 @@ function resetApp() {
   if(sBtn) sBtn.disabled = false;
   if(cBtn) cBtn.disabled = false;
 
-  ['nationalId','name','phone','complaintText'].forEach(function(id){
+  ['name','phone','complaintText'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.value = '';
   });
