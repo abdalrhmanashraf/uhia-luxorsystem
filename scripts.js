@@ -1,453 +1,329 @@
-// scripts.js — النسخة النهائية المحسّنة
+// ================================================================
+// UHIA Luxor System v5.0 — Frontend Logic (Optimized)
+// ================================================================
 
 var APP = {
-  step:1, nationalId:'', name:'', phone:'',
-  category:'', providerCode:'', providerName:'',
-  surveyAnswers:{}, audioBase64:null, imageFiles:[],
-  mediaRecorder:null, recInterval:null, recSeconds:0, MAX_REC:90
+  step: 1,
+  employeeName: '',
+  sector: '',
+  category: '',
+  providerCode: '',
+  providerName: '',
+  location: '',
+  surveyAnswers: {}
 };
 
-var CAT_META = {
-  'وحدة صحية':     {icon:'🏥'},
-  'مستشفى رعاية':  {icon:'🏨'},
-  'مستشفى متعاقد': {icon:'🤝'},
-  'معمل متعاقد':   {icon:'🔬'}
-};
+var SCRIPT_URL = (typeof CONFIG !== 'undefined' && CONFIG.scriptUrl) ? CONFIG.scriptUrl : '';
 
-var STEP_PCT   = {1:25, 2:50, 3:75, '4s':92, '4c':92, 'ok':100};
+var STEP_PCT   = { '1':20, '2':40, '3':60, '4':80, '5':100, 'ok':100 };
 var STEP_LABEL = {
-  1:'الخطوة 1 من 4', 2:'الخطوة 2 من 4',
-  3:'الخطوة 3 من 4', '4s':'الخطوة 4 من 4',
-  '4c':'الخطوة 4 من 4', 'ok':'✅ اكتمل'
+  '1': 'اختيار الموظف',
+  '2': 'تحديد القطاع',
+  '3': 'نوع المنشأة',
+  '4': 'اختيار المنشأة',
+  '5': 'الاستبيان',
+  'ok': 'تم بنجاح ✅'
 };
 
-window.addEventListener('load', function() {
-  document.getElementById('branchName').textContent = BRANCH_NAME;
-  renderCategories(STATIC_DATA.categories);
-});
+// ─── Init ───
+document.addEventListener('DOMContentLoaded', initApp);
 
-function goStep(n) {
-  document.querySelectorAll('.step').forEach(function(s){
-    s.classList.remove('active');
+function initApp() {
+  var empSelect = document.getElementById('employeeSelect');
+  EMPLOYEES.forEach(function(emp) {
+    var opt = document.createElement('option');
+    opt.value = emp;
+    opt.textContent = emp;
+    empSelect.appendChild(opt);
   });
-  var idMap = {
-    1:'step1', 2:'step2', 3:'step3',
-    '4s':'step4survey', '4c':'step4complaint', 'ok':'stepSuccess'
-  };
-  var el = document.getElementById(idMap[String(n)]);
-  if(el) el.classList.add('active');
-  APP.step = n;
-  document.getElementById('progressBar').style.width =
-    (STEP_PCT[String(n)] || 25) + '%';
-  document.getElementById('stepLabel').textContent =
-    STEP_LABEL[String(n)] || '';
-  window.scrollTo({top:0, behavior:'smooth'});
+  renderSectors();
 }
 
+// ─── Navigation ───
+function goStep(n) {
+  document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+  var targetId = (n === 'ok') ? 'stepOk' : (n === 5 ? 'step5survey' : 'step' + n);
+  var el = document.getElementById(targetId);
+  if (el) el.classList.add('active');
+
+  var pct = STEP_PCT[String(n)] || 20;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressGlow').style.width = pct + '%';
+  document.getElementById('stepLabel').textContent = STEP_LABEL[String(n)] || '';
+  document.getElementById('stepBadge').textContent =
+    (n === 'ok') ? '✅' : n + ' / 5';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  APP.step = n;
+}
+
+// ─── Step 1: Employee ───
 function goStep2() {
-  var nm = document.getElementById('name').value.trim();
-  var ph = document.getElementById('phone').value.trim();
-  var ok = true;
-  ok = _v('name',       nm.length >= 4,       'الاسم قصير — 4 أحرف على الأقل') && ok;
-  ok = _v('phone',      /^01[0-9]{9}$/.test(ph), 'رقم الهاتف غير صحيح') && ok;
-  if(!ok) return;
-  APP.name       = nm;
-  APP.phone      = ph;
+  var emp = document.getElementById('employeeSelect').value;
+  var errEl = document.getElementById('err-employee');
+  var selEl = document.getElementById('employeeSelect');
+
+  if (!emp) {
+    selEl.classList.add('error');
+    errEl.textContent = 'الرجاء اختيار اسمك أولاً';
+    selEl.focus();
+    return;
+  }
+  selEl.classList.remove('error');
+  errEl.textContent = '';
+  APP.employeeName = emp;
   goStep(2);
 }
 
-function _v(id, ok, msg) {
-  var el    = document.getElementById(id);
-  var errEl = document.getElementById('err-' + id);
-  if(el)    el.classList.toggle('error', !ok);
-  if(errEl) errEl.textContent = ok ? '' : msg;
-  return ok;
-}
-
-function renderCategories(cats) {
-  var grid = document.getElementById('categoryGrid');
-  if(!grid) return;
+// ─── Step 2: Sector ───
+function renderSectors() {
+  var grid = document.getElementById('sectorGrid');
   grid.innerHTML = '';
-  cats.forEach(function(cat) {
-    var meta = CAT_META[cat] || {icon:'🏥'};
-    var d    = document.createElement('div');
-    d.className = 'cat-card';
-    d.innerHTML = '<div class="cat-icon">' + meta.icon + '</div>'
-                + '<div class="cat-name">' + cat + '</div>';
-    d.onclick = function(){ selectCat(cat, d); };
+  Object.keys(STATIC_DATA.sectors).forEach(function(sec) {
+    var meta = (typeof SECTOR_META !== 'undefined' && SECTOR_META[sec]) || { icon: '🏥' };
+    var d = document.createElement('div');
+    d.className = 'selection-card';
+    d.setAttribute('role', 'button');
+    d.setAttribute('tabindex', '0');
+    d.innerHTML =
+      '<span class="icon">' + meta.icon + '</span>' +
+      '<span class="title">' + sec + '</span>';
+    d.onclick = function() { selectSector(sec, d); };
+    d.onkeydown = function(e) { if (e.key === 'Enter') selectSector(sec, d); };
     grid.appendChild(d);
   });
 }
 
-function selectCat(cat, el) {
-  document.querySelectorAll('.cat-card').forEach(function(c){
-    c.classList.remove('selected');
-  });
+function selectSector(sec, el) {
+  document.querySelectorAll('#sectorGrid .selection-card').forEach(function(c) { c.classList.remove('selected'); });
   el.classList.add('selected');
-  APP.category = cat;
-  document.getElementById('actionBtns').style.display = 'none';
-  renderProviders(STATIC_DATA.providers[cat] || []);
-  goStep(3);
+  APP.sector = sec;
+  setTimeout(function() {
+    renderCategories(sec);
+    goStep(3);
+  }, 200);
 }
 
+// ─── Step 3: Category ───
+function renderCategories(sec) {
+  var grid = document.getElementById('categoryGrid');
+  grid.innerHTML = '';
+  (STATIC_DATA.sectors[sec] || []).forEach(function(cat) {
+    var meta = (typeof CATEGORY_META !== 'undefined' && CATEGORY_META[cat]) || { icon: '📁' };
+    var d = document.createElement('div');
+    d.className = 'selection-card';
+    d.setAttribute('role', 'button');
+    d.setAttribute('tabindex', '0');
+    d.innerHTML =
+      '<span class="icon">' + meta.icon + '</span>' +
+      '<span class="title">' + cat + '</span>';
+    d.onclick = function() { selectCategory(cat, d); };
+    d.onkeydown = function(e) { if (e.key === 'Enter') selectCategory(cat, d); };
+    grid.appendChild(d);
+  });
+}
+
+function selectCategory(cat, el) {
+  document.querySelectorAll('#categoryGrid .selection-card').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+  APP.category = cat;
+  setTimeout(function() {
+    renderProviders(STATIC_DATA.providers[cat] || []);
+    goStep(4);
+  }, 200);
+}
+
+// ─── Step 4: Provider ───
 function renderProviders(list) {
   var sel = document.getElementById('providerSelect');
-  sel.innerHTML = '<option value="">-- اختر المنفذ --</option>';
+  sel.innerHTML = '<option value="">— اختر المنشأة —</option>';
   list.forEach(function(p) {
-    var o          = document.createElement('option');
-    o.value        = p.code;
+    var o = document.createElement('option');
+    o.value = p.code;
+    o.textContent = p.name + (p.location ? ' (' + p.location + ')' : '');
     o.dataset.name = p.name;
     o.dataset.loc  = p.location || '';
-    o.textContent  = p.name + (p.location ? ' — ' + p.location : '');
     sel.appendChild(o);
   });
+  document.getElementById('actionBtns').style.display = 'none';
 }
 
 function providerChanged() {
   var sel = document.getElementById('providerSelect');
-  if(!sel.value) {
+  var opt = sel.options[sel.selectedIndex];
+  if (sel.value) {
+    APP.providerCode = sel.value;
+    APP.providerName = opt.dataset.name;
+    APP.location     = opt.dataset.loc;
+    document.getElementById('actionBtns').style.display = 'block';
+  } else {
     document.getElementById('actionBtns').style.display = 'none';
+  }
+}
+
+// ─── Step 5: Survey Questions ───
+function goSurvey() {
+  APP.surveyAnswers = {};
+  var container = document.getElementById('surveyQuestions');
+  container.innerHTML = '';
+
+  var sharedQs = STATIC_DATA.questions.shared || [];
+  var specQs   = (STATIC_DATA.questions.specific || {})[APP.category] || [];
+
+  // Info Box
+  var infoBox = document.createElement('div');
+  infoBox.className = 'survey-info-box';
+  infoBox.innerHTML =
+    '<div class="sib-row"><span class="sib-label">الموظف</span><span class="sib-val">' + APP.employeeName + '</span></div>' +
+    '<div class="sib-row"><span class="sib-label">القطاع</span><span class="sib-val">' + APP.sector + '</span></div>' +
+    '<div class="sib-row"><span class="sib-label">التصنيف</span><span class="sib-val">' + APP.category + '</span></div>' +
+    '<div class="sib-row"><span class="sib-label">المنشأة</span><span class="sib-val">' + APP.providerName + '</span></div>';
+  container.appendChild(infoBox);
+
+  // Shared Questions
+  container.appendChild(buildSectionTitle('📋 الأسئلة العامة الموحدة'));
+  sharedQs.forEach(function(q) { container.appendChild(buildQuestion(q)); });
+
+  // Specific Questions
+  if (specQs.length > 0) {
+    container.appendChild(buildSectionTitle('🎯 أسئلة متخصصة — ' + APP.category));
+    specQs.forEach(function(q) { container.appendChild(buildQuestion(q)); });
+  }
+
+  goStep(5);
+}
+
+function buildSectionTitle(text) {
+  var div = document.createElement('div');
+  div.className = 'section-title';
+  div.textContent = text;
+  return div;
+}
+
+function buildQuestion(q) {
+  var w = document.createElement('div');
+  w.className = 'q-block';
+  w.id = 'qwrap_' + q.code;
+
+  var html = '<div class="q-text">' + q.text + ' <span class="q-req">*</span></div>';
+  if (q.hint) {
+    html += '<div class="q-hint">💡 ' + q.hint + '</div>';
+  }
+
+  if (q.type === 'rating3') {
+    var icons   = ['😊', '🙂', '😞'];
+    var classes = ['opt-great', 'opt-good', 'opt-bad'];
+    html += '<div class="rating3-wrap">';
+    q.options.forEach(function(o, i) {
+      html += '<div class="rating3-btn ' + classes[i] + '" onclick="selR(\'' + q.code + '\',this,\'' + o + '\')" role="button" tabindex="0">' +
+        '<span class="r3-icon">' + icons[i] + '</span>' +
+        '<span class="r3-label">' + o + '</span>' +
+        '</div>';
+    });
+    html += '</div>';
+  } else if (q.type === 'yesno') {
+    html += '<div class="yesno-wrap">' +
+      '<div class="yesno-btn yes" onclick="selR(\'' + q.code + '\',this,\'نعم\')" role="button" tabindex="0">✅ نعم</div>' +
+      '<div class="yesno-btn no"  onclick="selR(\'' + q.code + '\',this,\'لا\')" role="button" tabindex="0">❌ لا</div>' +
+      '</div>';
+  }
+
+  w.innerHTML = html;
+  return w;
+}
+
+// ─── Answer Selection ───
+function selR(qcode, el, val) {
+  var wrap = document.getElementById('qwrap_' + qcode);
+  if (wrap) wrap.style.borderColor = '';
+  var parent = el.parentElement;
+  Array.from(parent.children).forEach(function(c) { c.classList.remove('sel'); });
+  el.classList.add('sel');
+  APP.surveyAnswers[qcode] = val;
+
+  // Haptic feedback on mobile (if available)
+  if (navigator.vibrate) navigator.vibrate(15);
+}
+
+// ─── Submit ───
+function submitSurvey() {
+  var sharedQs = STATIC_DATA.questions.shared || [];
+  var specQs   = (STATIC_DATA.questions.specific || {})[APP.category] || [];
+  var allQs    = sharedQs.concat(specQs);
+
+  var missing = false;
+  var firstMissingEl = null;
+  allQs.forEach(function(q) {
+    var v = APP.surveyAnswers[q.code];
+    var wrap = document.getElementById('qwrap_' + q.code);
+    if (!v) {
+      if (wrap) wrap.style.borderColor = '#F43F5E';
+      if (!firstMissingEl) firstMissingEl = wrap;
+      missing = true;
+    } else {
+      if (wrap) wrap.style.borderColor = '';
+    }
+  });
+
+  if (missing) {
+    alert('⚠️ الرجاء الإجابة على جميع الأسئلة المطلوبة');
+    if (firstMissingEl) firstMissingEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
-  APP.providerCode = sel.value;
-  APP.providerName = sel.options[sel.selectedIndex].dataset.name
-                  || sel.options[sel.selectedIndex].textContent;
-  APP.location = sel.options[sel.selectedIndex].dataset.loc || '';
-  document.getElementById('actionBtns').style.display = 'grid';
-}
 
-function goSurvey() {
-  goStep('4s');
-  var shared = STATIC_DATA.questions['shared'] || [];
-  var catSpecific = STATIC_DATA.questions[APP.category] || [];
-  
-  var normalShared = shared.filter(function(q){ return q.code !== 'Q_COM_99' && q.code !== 'EMP_NAME'; });
-  var endShared = shared.filter(function(q){ return q.code === 'Q_COM_99' || q.code === 'EMP_NAME'; });
-  
-  var questions = normalShared.concat(catSpecific).concat(endShared);
-  renderSurvey(questions);
-}
-
-function renderSurvey(questions) {
-  var c = document.getElementById('surveyQuestions');
-  APP.surveyAnswers = {};
-  c.innerHTML = '';
-
-  questions.forEach(function(q, i) {
-    var b = document.createElement('div');
-    b.className = 'q-block';
-    b.id = 'qb_' + q.code;
-    var inp = '';
-
-    if(q.type === 'rating') {
-      inp = '<div class="rating-wrap">' +
-        q.options.map(function(op) {
-          return '<button class="rating-btn" data-code="' + q.code + '"'
-               + ' data-val="' + op + '"'
-               + ' onclick="selR(this,\'' + q.code + '\')">' + op + '</button>';
-        }).join('') + '</div>';
-
-    } else if(q.type === 'yesno') {
-      inp = '<div class="yesno-wrap">'
-          + '<button class="yesno-btn yes" data-code="' + q.code + '"'
-          + ' onclick="selY(this,\'' + q.code + '\',\'نعم\')">✅ نعم</button>'
-          + '<button class="yesno-btn no" data-code="' + q.code + '"'
-          + ' onclick="selY(this,\'' + q.code + '\',\'لا\')">❌ لا</button>'
-          + '</div>';
-
-    } else if(q.type === 'multiple') {
-      inp = '<select onchange="APP.surveyAnswers[\'' + q.code + '\']=this.value">'
-          + '<option value="">-- اختر --</option>'
-          + q.options.map(function(op){
-              return '<option>' + op + '</option>';
-            }).join('')
-          + '</select>';
-
-    } else {
-      inp = '<textarea rows="3" placeholder="اكتب هنا..."'
-          + ' onchange="APP.surveyAnswers[\'' + q.code + '\']=this.value"></textarea>';
-    }
-
-    var rl = q.required ? '<span class="q-req"> *</span>' : '';
-    b.innerHTML = '<div class="q-text">' + (i+1) + '. ' + q.text + rl + '</div>' + inp;
-    if(q.dependOn) b.style.display = 'none';
-    c.appendChild(b);
-  });
-
-  document.querySelectorAll('[data-code]').forEach(function(el) {
-    el.addEventListener('click', function() {
-      questions.filter(function(q){ return q.dependOn; }).forEach(function(q) {
-        var blk = document.getElementById('qb_' + q.code);
-        if(blk) blk.style.display =
-          APP.surveyAnswers[q.dependOn] === q.dependVal ? 'block' : 'none';
-      });
-    });
-  });
-}
-
-function selR(btn, code) {
-  document.querySelectorAll('.rating-btn[data-code="' + code + '"]')
-    .forEach(function(b){ b.classList.remove('sel'); });
-  btn.classList.add('sel');
-  APP.surveyAnswers[code] = btn.dataset.val;
-}
-
-function selY(btn, code, val) {
-  document.querySelectorAll('.yesno-btn[data-code="' + code + '"]')
-    .forEach(function(b){ b.classList.remove('sel'); });
-  btn.classList.add('sel');
-  APP.surveyAnswers[code] = val;
-}
-
-function collectSurveyAnswers() {
-  var ALL_QUESTIONS = [
-    'Q_COM_01','Q_COM_02','Q_COM_03','Q_COM_03B',
-    'Q_COM_04','Q_COM_05','Q_COM_99','EMP_NAME',
-    'Q_UNIT_01','Q_UNIT_02','Q_UNIT_03','Q_UNIT_04',
-    'Q_CARE_01','Q_CARE_02','Q_CARE_03','Q_CARE_04','Q_CARE_05',
-    'Q_CONT_01','Q_CONT_02','Q_CONT_03','Q_CONT_04',
-    'Q_LAB_01','Q_LAB_02','Q_LAB_03','Q_LAB_04',
-    'Q_BOOKING_TIME', 'Q_OUTLET_EMP', 'Q_OUTLET_RATE'
-  ];
-  var answers = {};
-  ALL_QUESTIONS.forEach(function(qCode) {
-    answers[qCode] = APP.surveyAnswers[qCode] !== undefined
-                     ? APP.surveyAnswers[qCode]
-                     : null;
-  });
-  return answers;
-}
-
-function submitSurvey() {
   var btn = document.getElementById('surveyBtn');
   btn.disabled = true;
-  showLoading(true);
+  document.getElementById('loadingOverlay').style.display = 'flex';
 
-  callAPI('saveSurvey', {
-    payload: {
-      name:         APP.name,
-      phone:        APP.phone,
-      category:     APP.category,
-      providerCode: APP.providerCode,
-      providerName: APP.providerName,
-      location:     APP.location,
-      answers:      collectSurveyAnswers()
-    }
-  }, function(err, res) {
-    showLoading(false);
-    if(err || !res || !res.success) {
-      alert('خطأ في الإرسال — حاول مرة أخرى');
-      btn.disabled = false;
-      return;
-    }
-    showSuccess(res.id, 'survey');
-  });
-}
-
-function goComplaint() { goStep('4c'); }
-
-function toggleRecord() {
-  if(!APP.mediaRecorder || APP.mediaRecorder.state === 'inactive')
-    startRecording();
-  else
-    stopRecording();
-}
-
-function startRecording() {
-  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream) {
-    APP.audioBase64 = null;
-    APP.recSeconds  = 0;
-    var chunks = [];
-    
-    // تقليل الجودة لتسريع الإرسال (16kbps)
-    var options = {};
-    if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-      options = { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 16000 };
-    }
-    
-    try {
-      APP.mediaRecorder = new MediaRecorder(stream, options);
-    } catch(e) {
-      APP.mediaRecorder = new MediaRecorder(stream);
-    }
-    
-    APP.mediaRecorder.ondataavailable = function(e) {
-      if(e.data.size > 0) chunks.push(e.data);
-    };
-    APP.mediaRecorder.onstop = function() {
-      var blob = new Blob(chunks, {type:'audio/webm'});
-      document.getElementById('audioPlayer').src = URL.createObjectURL(blob);
-      document.getElementById('audioPlayer').style.display = 'block';
-      var fr = new FileReader();
-      fr.onloadend = function() { APP.audioBase64 = fr.result.split(',')[1]; };
-      fr.readAsDataURL(blob);
-      stream.getTracks().forEach(function(t){ t.stop(); });
-    };
-    APP.mediaRecorder.start();
-    var btn = document.getElementById('micBtn');
-    btn.textContent = '⏹ إيقاف التسجيل';
-    btn.classList.add('recording');
-    APP.recInterval = setInterval(function() {
-      APP.recSeconds++;
-      var m = String(Math.floor(APP.recSeconds / 60)).padStart(2, '0');
-      var s = String(APP.recSeconds % 60).padStart(2, '0');
-      document.getElementById('recTimer').textContent = m + ':' + s;
-      if(APP.recSeconds >= APP.MAX_REC) stopRecording();
-    }, 1000);
-  }).catch(function() {
-    alert('لم يُسمح بالميكروفون — استخدم رفع الملف الصوتي');
-  });
-}
-
-function stopRecording() {
-  if(APP.mediaRecorder && APP.mediaRecorder.state !== 'inactive') {
-    APP.mediaRecorder.stop();
-    clearInterval(APP.recInterval);
-    var btn = document.getElementById('micBtn');
-    btn.textContent = '✅ تم التسجيل';
-    btn.classList.remove('recording');
-    btn.style.background = '#28A745';
-  }
-}
-
-function handleAudioFile(input) {
-  if(!input.files || !input.files[0]) return;
-  var file = input.files[0];
-  if(file.size > 10 * 1024 * 1024) {
-    alert('الملف أكبر من 10MB');
-    return;
-  }
-  var fr = new FileReader();
-  fr.onloadend = function() {
-    APP.audioBase64 = fr.result.split(',')[1];
-    document.getElementById('audioPlayer').src = fr.result;
-    document.getElementById('audioPlayer').style.display = 'block';
-    document.getElementById('audioFileLabel').textContent = '✅ ' + file.name;
+  var payload = {
+    action:       'saveSurvey',
+    employeeName: APP.employeeName,
+    sector:       APP.sector,
+    category:     APP.category,
+    providerCode: APP.providerCode,
+    providerName: APP.providerName,
+    location:     APP.location,
+    answers:      APP.surveyAnswers
   };
-  fr.readAsDataURL(file);
-}
 
-function previewImages() {
-  APP.imageFiles = Array.from(document.getElementById('imgInput').files);
-  var c = document.getElementById('previewContainer');
-  c.innerHTML = '';
-  APP.imageFiles.forEach(function(f) {
-    var img = document.createElement('img');
-    img.src = URL.createObjectURL(f);
-    c.appendChild(img);
-  });
-  document.getElementById('uploadLabel').textContent =
-    APP.imageFiles.length + ' صورة مختارة';
-}
-
-function submitComplaint() {
-  var text = document.getElementById('complaintText').value.trim();
-  if(!text && !APP.audioBase64) {
-    alert('الرجاء كتابة الشكوى أو تسجيلها صوتياً');
-    return;
-  }
-  var btn = document.getElementById('complaintBtn');
-  btn.disabled = true;
-  showLoading(true);
-
-  Promise.all(APP.imageFiles.map(function(f) {
-    return new Promise(function(res) {
-      var r = new FileReader();
-      r.onloadend = function() { res(r.result.split(',')[1]); };
-      r.readAsDataURL(f);
-    });
-  })).then(function(imgs) {
-    callAPI('saveComplaint', {
-      payload: {
-        name:         APP.name,
-        phone:        APP.phone,
-        category:     APP.category,
-        providerCode: APP.providerCode,
-        providerName: APP.providerName,
-        text:         text,
-        audioBase64:  APP.audioBase64 || null,
-        images:       imgs
-      }
-    }, function(err, res) {
-      showLoading(false);
-      if(err || !res || !res.success) {
-        alert('خطأ في الإرسال — حاول مرة أخرى');
-        btn.disabled = false;
-        return;
-      }
-      showSuccess(res.id, 'complaint');
-    });
-  });
-}
-
-function callAPI(action, params, cb) {
-  var body = JSON.stringify(Object.assign({action: action}, params || {}));
-  var controller = new AbortController();
-  var timeout = setTimeout(function() { controller.abort(); }, 30000);
   fetch(SCRIPT_URL, {
     method:  'POST',
-    headers: {'Content-Type': 'text/plain'},
-    body:    body,
-    signal:  controller.signal
+    headers: { 'Content-Type': 'text/plain' },
+    body:    JSON.stringify(payload)
   })
-  .then(function(r) {
-    clearTimeout(timeout);
-    return r.json();
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    if (res && res.success) {
+      goStep('ok');
+    } else {
+      alert('❌ حدث خطأ أثناء الإرسال، حاول مرة أخرى');
+      btn.disabled = false;
+    }
   })
-  .then(function(data){ cb(null, data); })
-  .catch(function(err){
-    clearTimeout(timeout);
-    cb(err, null);
+  .catch(function() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    alert('❌ تعذر الاتصال بالخادم');
+    btn.disabled = false;
   });
 }
 
-function showSuccess(id, type) {
-  document.getElementById('ticketId').textContent = id;
-  if(type === 'complaint') {
-    document.getElementById('successTitle').textContent = '✅ تم استقبال شكواك بنجاح!';
-    document.getElementById('successMsg').innerHTML =
-      'سنتواصل معك خلال <strong>48 ساعة</strong> على <strong>' + APP.phone + '</strong>';
-  } else {
-    document.getElementById('successTitle').textContent = '✅ شكراً على تقييمك!';
-    document.getElementById('successMsg').textContent =
-      'رأيك يساعدنا على تحسين الخدمة 🌟';
-  }
-  goStep('ok');
-}
-
+// ─── Reset ───
 function resetApp() {
-  Object.assign(APP, {
-    step:1, name:'', phone:'',
-    category:'', providerCode:'', providerName:'',
-    surveyAnswers:{}, audioBase64:null, imageFiles:[]
-  });
-  var sBtn = document.getElementById('surveyBtn');
-  var cBtn = document.getElementById('complaintBtn');
-  if(sBtn) sBtn.disabled = false;
-  if(cBtn) cBtn.disabled = false;
+  APP.employeeName  = '';
+  APP.sector        = '';
+  APP.category      = '';
+  APP.providerCode  = '';
+  APP.providerName  = '';
+  APP.location      = '';
+  APP.surveyAnswers = {};
 
-  ['name','phone','complaintText'].forEach(function(id){
-    var el = document.getElementById(id);
-    if(el) el.value = '';
-  });
-  document.getElementById('audioPlayer').style.display  = 'none';
-  document.getElementById('previewContainer').innerHTML = '';
-  document.getElementById('uploadLabel').textContent    = 'اضغط لاختيار صور';
-  var afl = document.getElementById('audioFileLabel');
-  if(afl) afl.textContent = 'اضغط لاختيار ملف صوتي';
-  document.getElementById('recTimer').textContent = '00:00';
-  var mic = document.getElementById('micBtn');
-  mic.textContent      = '🎙️ ابدأ التسجيل';
-  mic.style.background = '';
-  mic.classList.remove('recording');
-  var sel = document.getElementById('providerSelect');
-  if(sel) sel.innerHTML = '<option value="">-- اختر المنفذ --</option>';
+  document.getElementById('employeeSelect').value = '';
+  document.getElementById('providerSelect').innerHTML = '<option value="">— اختر المنشأة —</option>';
   document.getElementById('actionBtns').style.display = 'none';
-  var sq = document.getElementById('surveyQuestions');
-  if(sq) sq.innerHTML = '';
-  goStep(1);
-}
 
-function showLoading(show) {
-  document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+  var btn = document.getElementById('surveyBtn');
+  if (btn) btn.disabled = false;
+
+  goStep(1);
 }
