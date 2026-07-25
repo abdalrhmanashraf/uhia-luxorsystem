@@ -165,9 +165,7 @@ var STATIC_DATA = {
       {name:'معمل الاسراء',              code:'LAB004', location:'الأقصر'}
     ],
     'الصيدليات': [
-      {name:'صيدلية (متعاقدة 1)', code:'PHR001', location:'الأقصر'},
-      {name:'صيدلية (متعاقدة 2)', code:'PHR002', location:'الأقصر'},
-      {name:'صيدلية (متعاقدة 3)', code:'PHR003', location:'الأقصر'}
+      {name:'صيدلية المواساة', code:'PHR001', location:'الأقصر'}
     ]
   },
 
