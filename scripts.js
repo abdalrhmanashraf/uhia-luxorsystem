@@ -14,7 +14,7 @@ var APP = {
   surveyAnswers: {}
 };
 
-var SCRIPT_URL = (typeof CONFIG !== 'undefined' && CONFIG.scriptUrl) ? CONFIG.scriptUrl : '';
+// SCRIPT_URL يتم تعريفه في ملف config.js
 
 var STEP_PCT   = { '1':16, '2':33, '3':50, '4':66, '5':83, '6':100, 'ok':100 };
 var STEP_LABEL = {
