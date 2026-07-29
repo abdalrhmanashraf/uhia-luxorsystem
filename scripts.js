@@ -210,6 +210,13 @@ function goSurvey() {
     specQs.forEach(function(q) { container.appendChild(buildQuestion(q)); });
   }
 
+  // Final Questions
+  var finalQs = STATIC_DATA.questions.final || [];
+  if (finalQs.length > 0) {
+    container.appendChild(buildSectionTitle('🌟 التقييم العام'));
+    finalQs.forEach(function(q) { container.appendChild(buildQuestion(q)); });
+  }
+
   // Handle Stats Board
   var statsBoard = document.getElementById('statsBoard');
   var cardTotal = document.getElementById('cardStatTotal');
@@ -309,7 +316,8 @@ function selR(qcode, el, val) {
 function submitSurvey() {
   var sharedQs = STATIC_DATA.questions.shared || [];
   var specQs   = (STATIC_DATA.questions.specific || {})[APP.category] || [];
-  var allQs    = sharedQs.concat(specQs);
+  var finalQs  = STATIC_DATA.questions.final || [];
+  var allQs    = sharedQs.concat(specQs).concat(finalQs);
 
   var missing = false;
   var firstMissingEl = null;
@@ -365,7 +373,7 @@ function submitSurvey() {
     if (res && res.success) {
       goStep('ok');
     } else {
-      alert('❌ حدث خطأ أثناء الإرسال، حاول مرة أخرى');
+      alert('❌ حدث خطأ أثناء الإرسال: ' + (res.error || res.message || JSON.stringify(res)));
       btn.disabled = false;
     }
   })
