@@ -218,6 +218,65 @@ body{
 #sectorGrid .icon{font-size:3.2rem}
 #sectorGrid .title{font-size:1.05rem}
 
+/* ── Stats Board ── */
+.stats-board {
+  background: linear-gradient(135deg, rgba(30,41,59,0.8), rgba(15,23,42,0.9));
+  border: 1px solid rgba(59,130,246,0.25);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  box-shadow: inset 0 2px 10px rgba(255,255,255,0.02), 0 4px 15px rgba(0,0,0,0.2);
+}
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.stat-icon {
+  font-size: 1.5rem;
+  background: rgba(59,130,246,0.15);
+  padding: 8px;
+  border-radius: 10px;
+}
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+.stat-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.stat-val {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--blue-300);
+}
+.stat-done {
+  color: var(--emerald-400);
+}
+.spinner-small {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+}
+@media (max-width: 480px) {
+  .stats-board { grid-template-columns: 1fr; gap: 8px; padding: 12px; }
+  .stat-card { padding: 8px; }
+}
+
 /* ── Survey Info Box ── */
 .survey-info-box{
   background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(139,92,246,.06));
@@ -248,6 +307,24 @@ body{
 .q-block:hover{box-shadow:0 4px 16px rgba(0,0,0,.15)}
 .q-text{font-size:.92rem;font-weight:800;color:var(--text);margin-bottom:10px;line-height:1.65}
 .q-req{color:var(--rose-400)}
+textarea.q-textarea {
+  width: 100%;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  color: var(--text);
+  padding: 12px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.3s;
+}
+textarea.q-textarea:focus {
+  outline: none;
+  border-color: var(--blue-400);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+}
 .q-hint{
   font-size:.73rem;color:var(--text-dim);font-weight:600;
   background:rgba(255,255,255,.04);border-radius:8px;

@@ -135,7 +135,35 @@
   <div class="card step card-survey" id="step6survey">
     <div class="card-icon">📊</div>
     <h2>استبيان رضا المنتفع</h2>
-    <p class="card-desc">جميع الأسئلة إلزامية — أجب بصدق لمساعدتنا على تحسين الخدمة</p>
+    <p class="card-desc">أجب بصدق لمساعدتنا على تحسين الخدمة</p>
+    
+    <!-- لوحة إحصائيات المستشفى المستهدفة -->
+    <div id="statsBoard" class="stats-board" style="display:none;">
+      <div class="stat-card">
+        <span class="stat-icon">👥</span>
+        <div class="stat-info">
+          <span class="stat-label">متوسط التردد</span>
+          <strong class="stat-val" id="statTotal">--</strong>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🎯</span>
+        <div class="stat-info">
+          <span class="stat-label">المستهدف (10%)</span>
+          <strong class="stat-val" id="statSample">--</strong>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">📈</span>
+        <div class="stat-info">
+          <span class="stat-label">ما تم إنجازه</span>
+          <strong class="stat-val stat-done" id="statDone">
+            <span class="spinner-small"></span>
+          </strong>
+        </div>
+      </div>
+    </div>
+
     <div id="surveyQuestions"></div>
     <button class="btn-next btn-submit" id="surveyBtn" onclick="submitSurvey()">
       <span>إرسال التقييم</span>

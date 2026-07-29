@@ -210,6 +210,39 @@ function goSurvey() {
     specQs.forEach(function(q) { container.appendChild(buildQuestion(q)); });
   }
 
+  // Handle Stats Board
+  var statsBoard = document.getElementById('statsBoard');
+  if (typeof HOSPITAL_TARGETS !== 'undefined' && HOSPITAL_TARGETS[APP.providerName]) {
+    var targetData = HOSPITAL_TARGETS[APP.providerName];
+    if (targetData.breakdown && targetData.breakdown[APP.category]) {
+      document.getElementById('statTotal').textContent = targetData.total_monthly.toLocaleString('en-US');
+      document.getElementById('statSample').textContent = targetData.breakdown[APP.category].toLocaleString('en-US');
+      var statDone = document.getElementById('statDone');
+      statDone.innerHTML = '<span class="spinner-small"></span>';
+      statsBoard.style.display = 'grid';
+
+      var countPayload = { action: 'getCounts', providerName: APP.providerName, category: APP.category };
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(countPayload)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if(res && res.success) {
+          statDone.textContent = res.count.toLocaleString('en-US');
+        } else {
+          statDone.textContent = 'خطأ';
+        }
+      })
+      .catch(function(e) { statDone.textContent = 'تعذر'; });
+    } else {
+      statsBoard.style.display = 'none';
+    }
+  } else {
+    statsBoard.style.display = 'none';
+  }
+
   goStep(6);
 }
 
@@ -246,6 +279,8 @@ function buildQuestion(q) {
       '<div class="yesno-btn yes" onclick="selR(\'' + q.code + '\',this,\'نعم\')" role="button" tabindex="0">✅ نعم</div>' +
       '<div class="yesno-btn no"  onclick="selR(\'' + q.code + '\',this,\'لا\')" role="button" tabindex="0">❌ لا</div>' +
       '</div>';
+  } else if (q.type === 'textarea') {
+    html += '<textarea class="q-textarea" placeholder="' + q.text + '" oninput="APP.surveyAnswers[\'' + q.code + '\'] = this.value;"></textarea>';
   }
 
   w.innerHTML = html;
@@ -276,7 +311,7 @@ function submitSurvey() {
   allQs.forEach(function(q) {
     var v = APP.surveyAnswers[q.code];
     var wrap = document.getElementById('qwrap_' + q.code);
-    if (!v) {
+    if (!v && q.type !== 'textarea') { // Textarea (notes) is optional
       if (wrap) wrap.style.borderColor = '#F43F5E';
       if (!firstMissingEl) firstMissingEl = wrap;
       missing = true;
@@ -329,9 +364,9 @@ function submitSurvey() {
       btn.disabled = false;
     }
   })
-  .catch(function() {
+  .catch(function(err) {
     document.getElementById('loadingOverlay').style.display = 'none';
-    alert('❌ تعذر الاتصال بالخادم');
+    alert('❌ تعذر الاتصال بالخادم: ' + err.message);
     btn.disabled = false;
   });
 }
