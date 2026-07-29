@@ -32,32 +32,32 @@
         <span class="brand-branch">فرع الأقصر</span>
       </div>
     </div>
-    <div class="step-badge" id="stepBadge">1 / 5</div>
+    <div class="step-badge" id="stepBadge">1 / 6</div>
   </div>
   <div class="progress-track">
     <div class="progress-fill" id="progressBar"></div>
     <div class="progress-glow" id="progressGlow"></div>
   </div>
-  <p class="step-desc" id="stepLabel">اختيار الموظف</p>
+  <p class="step-desc" id="stepLabel">اختيار الفريق</p>
 </header>
 
 <!-- ══ MAIN ══ -->
 <main class="container">
 
-  <!-- ═══ STEP 1: الموظف ═══ -->
+  <!-- ═══ STEP 1: الفريق ═══ -->
   <div class="card step active" id="step1">
-    <div class="card-icon">👤</div>
-    <h2>جامع الاستبيان</h2>
-    <p class="card-desc">اختر اسمك كموظف مسؤول عن إدخال هذا التقييم</p>
+    <div class="card-icon">👥</div>
+    <h2>اختيار الفريق</h2>
+    <p class="card-desc">الرجاء تحديد الفريق الذي تنتمي إليه</p>
     <div class="form-group">
-      <label for="employeeSelect">اسم الموظف <span class="req">*</span></label>
+      <label for="teamSelect">اسم الفريق <span class="req">*</span></label>
       <div class="select-wrap">
-        <select id="employeeSelect">
-          <option value="">— اختر اسمك —</option>
+        <select id="teamSelect">
+          <option value="">— اختر الفريق —</option>
         </select>
         <span class="select-arrow">▼</span>
       </div>
-      <span class="field-err" id="err-employee"></span>
+      <span class="field-err" id="err-team"></span>
     </div>
     <button class="btn-next" onclick="goStep2()">
       <span>التالي</span>
@@ -65,26 +65,51 @@
     </button>
   </div>
 
-  <!-- ═══ STEP 2: القطاع ═══ -->
+  <!-- ═══ STEP 2: رقم الموظف ═══ -->
   <div class="card step" id="step2">
+    <div class="card-icon">👤</div>
+    <h2>رقم الموظف</h2>
+    <p class="card-desc">اختر رقمك التعريفي داخل الفريق</p>
+    <div class="form-group">
+      <label for="employeeSelect">رقم الموظف <span class="req">*</span></label>
+      <div class="select-wrap">
+        <select id="employeeSelect">
+          <option value="">— اختر رقمك —</option>
+          <option value="1">موظف رقم 1</option>
+          <option value="2">موظف رقم 2</option>
+          <option value="3">موظف رقم 3</option>
+        </select>
+        <span class="select-arrow">▼</span>
+      </div>
+      <span class="field-err" id="err-employee"></span>
+    </div>
+    <button class="btn-next" onclick="goStep3()">
+      <span>التالي</span>
+      <span class="btn-arrow">←</span>
+    </button>
+    <button class="btn-back" onclick="goStep(1)">← رجوع</button>
+  </div>
+
+  <!-- ═══ STEP 3: القطاع ═══ -->
+  <div class="card step" id="step3">
     <div class="card-icon">🏢</div>
     <h2>القطاع الصحي</h2>
     <p class="card-desc">حدد القطاع الذي يتلقى فيه المنتفع الخدمة</p>
     <div class="grid-2" id="sectorGrid"></div>
-    <button class="btn-back" onclick="goStep(1)">← رجوع</button>
+    <button class="btn-back" onclick="goStep(2)">← رجوع</button>
   </div>
 
-  <!-- ═══ STEP 3: نوع المنشأة ═══ -->
-  <div class="card step" id="step3">
+  <!-- ═══ STEP 4: نوع المنشأة ═══ -->
+  <div class="card step" id="step4">
     <div class="card-icon">🏥</div>
     <h2>نوع المنشأة</h2>
     <p class="card-desc">حدد نوع المنشأة أو القسم</p>
     <div class="grid-2" id="categoryGrid"></div>
-    <button class="btn-back" onclick="goStep(2)">← رجوع</button>
+    <button class="btn-back" onclick="goStep(3)">← رجوع</button>
   </div>
 
-  <!-- ═══ STEP 4: المنشأة ═══ -->
-  <div class="card step" id="step4">
+  <!-- ═══ STEP 5: المنشأة ═══ -->
+  <div class="card step" id="step5">
     <div class="card-icon">📍</div>
     <h2>اسم المنشأة</h2>
     <p class="card-desc">اختر المنشأة الصحية التي يُقيّمها المنتفع</p>
@@ -103,11 +128,11 @@
         <span class="btn-arrow">←</span>
       </button>
     </div>
-    <button class="btn-back" onclick="goStep(3)">← رجوع</button>
+    <button class="btn-back" onclick="goStep(4)">← رجوع</button>
   </div>
 
-  <!-- ═══ STEP 5: الاستبيان ═══ -->
-  <div class="card step card-survey" id="step5survey">
+  <!-- ═══ STEP 6: الاستبيان ═══ -->
+  <div class="card step card-survey" id="step6survey">
     <div class="card-icon">📊</div>
     <h2>استبيان رضا المنتفع</h2>
     <p class="card-desc">جميع الأسئلة إلزامية — أجب بصدق لمساعدتنا على تحسين الخدمة</p>
@@ -116,7 +141,7 @@
       <span>إرسال التقييم</span>
       <span class="btn-arrow">✅</span>
     </button>
-    <button class="btn-back" onclick="goStep(4)">← رجوع</button>
+    <button class="btn-back" onclick="goStep(5)">← رجوع</button>
   </div>
 
   <!-- ═══ SUCCESS ═══ -->
@@ -160,8 +185,8 @@
   </p>
 </footer>
 
-<script src="config.js?v=50"></script>
-<script src="data.js?v=50"></script>
-<script src="scripts.js?v=50"></script>
+<script src="config.js?v=60"></script>
+<script src="data.js?v=60"></script>
+<script src="scripts.js?v=60"></script>
 </body>
 </html>

@@ -4,7 +4,8 @@
 
 var APP = {
   step: 1,
-  employeeName: '',
+  teamName: '',
+  employeeNumber: '',
   sector: '',
   category: '',
   providerCode: '',
@@ -15,13 +16,14 @@ var APP = {
 
 var SCRIPT_URL = (typeof CONFIG !== 'undefined' && CONFIG.scriptUrl) ? CONFIG.scriptUrl : '';
 
-var STEP_PCT   = { '1':20, '2':40, '3':60, '4':80, '5':100, 'ok':100 };
+var STEP_PCT   = { '1':16, '2':33, '3':50, '4':66, '5':83, '6':100, 'ok':100 };
 var STEP_LABEL = {
-  '1': 'اختيار الموظف',
-  '2': 'تحديد القطاع',
-  '3': 'نوع المنشأة',
-  '4': 'اختيار المنشأة',
-  '5': 'الاستبيان',
+  '1': 'الفريق',
+  '2': 'رقم الموظف',
+  '3': 'القطاع',
+  '4': 'نوع المنشأة',
+  '5': 'اختيار المنشأة',
+  '6': 'الاستبيان',
   'ok': 'تم بنجاح ✅'
 };
 
@@ -29,12 +31,12 @@ var STEP_LABEL = {
 document.addEventListener('DOMContentLoaded', initApp);
 
 function initApp() {
-  var empSelect = document.getElementById('employeeSelect');
-  EMPLOYEES.forEach(function(emp) {
+  var teamSelect = document.getElementById('teamSelect');
+  TEAMS.forEach(function(team) {
     var opt = document.createElement('option');
-    opt.value = emp;
-    opt.textContent = emp;
-    empSelect.appendChild(opt);
+    opt.value = team;
+    opt.textContent = team;
+    teamSelect.appendChild(opt);
   });
   renderSectors();
 }
@@ -42,40 +44,57 @@ function initApp() {
 // ─── Navigation ───
 function goStep(n) {
   document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
-  var targetId = (n === 'ok') ? 'stepOk' : (n === 5 ? 'step5survey' : 'step' + n);
+  var targetId = (n === 'ok') ? 'stepOk' : (n === 6 ? 'step6survey' : 'step' + n);
   var el = document.getElementById(targetId);
   if (el) el.classList.add('active');
 
-  var pct = STEP_PCT[String(n)] || 20;
+  var pct = STEP_PCT[String(n)] || 16;
   document.getElementById('progressBar').style.width = pct + '%';
   document.getElementById('progressGlow').style.width = pct + '%';
   document.getElementById('stepLabel').textContent = STEP_LABEL[String(n)] || '';
   document.getElementById('stepBadge').textContent =
-    (n === 'ok') ? '✅' : n + ' / 5';
+    (n === 'ok') ? '✅' : n + ' / 6';
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
   APP.step = n;
 }
 
-// ─── Step 1: Employee ───
+// ─── Step 1 & 2: Team and Employee ───
 function goStep2() {
-  var emp = document.getElementById('employeeSelect').value;
-  var errEl = document.getElementById('err-employee');
-  var selEl = document.getElementById('employeeSelect');
+  var team = document.getElementById('teamSelect').value;
+  var errEl = document.getElementById('err-team');
+  var selEl = document.getElementById('teamSelect');
 
-  if (!emp) {
+  if (!team) {
     selEl.classList.add('error');
-    errEl.textContent = 'الرجاء اختيار اسمك أولاً';
+    errEl.textContent = 'الرجاء اختيار الفريق أولاً';
     selEl.focus();
     return;
   }
   selEl.classList.remove('error');
   errEl.textContent = '';
-  APP.employeeName = emp;
+  APP.teamName = team;
   goStep(2);
 }
 
-// ─── Step 2: Sector ───
+function goStep3() {
+  var empNo = document.getElementById('employeeSelect').value;
+  var errEl = document.getElementById('err-employee');
+  var selEl = document.getElementById('employeeSelect');
+
+  if (!empNo) {
+    selEl.classList.add('error');
+    errEl.textContent = 'الرجاء اختيار رقم الموظف';
+    selEl.focus();
+    return;
+  }
+  selEl.classList.remove('error');
+  errEl.textContent = '';
+  APP.employeeNumber = empNo;
+  goStep(3);
+}
+
+// ─── Step 3: Sector ───
 function renderSectors() {
   var grid = document.getElementById('sectorGrid');
   grid.innerHTML = '';
@@ -100,7 +119,7 @@ function selectSector(sec, el) {
   APP.sector = sec;
   setTimeout(function() {
     renderCategories(sec);
-    goStep(3);
+    goStep(4);
   }, 200);
 }
 
@@ -129,7 +148,7 @@ function selectCategory(cat, el) {
   APP.category = cat;
   setTimeout(function() {
     renderProviders(STATIC_DATA.providers[cat] || []);
-    goStep(4);
+    goStep(5);
   }, 200);
 }
 
@@ -174,7 +193,8 @@ function goSurvey() {
   var infoBox = document.createElement('div');
   infoBox.className = 'survey-info-box';
   infoBox.innerHTML =
-    '<div class="sib-row"><span class="sib-label">الموظف</span><span class="sib-val">' + APP.employeeName + '</span></div>' +
+    '<div class="sib-row"><span class="sib-label">الفريق</span><span class="sib-val">' + APP.teamName + '</span></div>' +
+    '<div class="sib-row"><span class="sib-label">موظف رقم</span><span class="sib-val">' + APP.employeeNumber + '</span></div>' +
     '<div class="sib-row"><span class="sib-label">القطاع</span><span class="sib-val">' + APP.sector + '</span></div>' +
     '<div class="sib-row"><span class="sib-label">التصنيف</span><span class="sib-val">' + APP.category + '</span></div>' +
     '<div class="sib-row"><span class="sib-label">المنشأة</span><span class="sib-val">' + APP.providerName + '</span></div>';
@@ -190,7 +210,7 @@ function goSurvey() {
     specQs.forEach(function(q) { container.appendChild(buildQuestion(q)); });
   }
 
-  goStep(5);
+  goStep(6);
 }
 
 function buildSectionTitle(text) {
@@ -275,15 +295,23 @@ function submitSurvey() {
   btn.disabled = true;
   document.getElementById('loadingOverlay').style.display = 'flex';
 
+  var payloadAnswers = {};
+  allQs.forEach(function(q) {
+    if (APP.surveyAnswers[q.code]) {
+      payloadAnswers[q.text] = APP.surveyAnswers[q.code];
+    }
+  });
+
   var payload = {
     action:       'saveSurvey',
-    employeeName: APP.employeeName,
+    teamName:     APP.teamName,
+    employeeNumber: APP.employeeNumber,
     sector:       APP.sector,
     category:     APP.category,
     providerCode: APP.providerCode,
     providerName: APP.providerName,
     location:     APP.location,
-    answers:      APP.surveyAnswers
+    answers:      payloadAnswers
   };
 
   fetch(SCRIPT_URL, {
@@ -310,7 +338,8 @@ function submitSurvey() {
 
 // ─── Reset ───
 function resetApp() {
-  APP.employeeName  = '';
+  APP.teamName      = '';
+  APP.employeeNumber= '';
   APP.sector        = '';
   APP.category      = '';
   APP.providerCode  = '';
@@ -318,6 +347,7 @@ function resetApp() {
   APP.location      = '';
   APP.surveyAnswers = {};
 
+  document.getElementById('teamSelect').value = '';
   document.getElementById('employeeSelect').value = '';
   document.getElementById('providerSelect').innerHTML = '<option value="">— اختر المنشأة —</option>';
   document.getElementById('actionBtns').style.display = 'none';
