@@ -212,36 +212,41 @@ function goSurvey() {
 
   // Handle Stats Board
   var statsBoard = document.getElementById('statsBoard');
-  if (typeof HOSPITAL_TARGETS !== 'undefined' && HOSPITAL_TARGETS[APP.providerName]) {
-    var targetData = HOSPITAL_TARGETS[APP.providerName];
-    if (targetData.breakdown && targetData.breakdown[APP.category]) {
-      document.getElementById('statTotal').textContent = targetData.total_monthly.toLocaleString('en-US');
-      document.getElementById('statSample').textContent = targetData.breakdown[APP.category].toLocaleString('en-US');
-      var statDone = document.getElementById('statDone');
-      statDone.innerHTML = '<span class="spinner-small"></span>';
-      statsBoard.style.display = 'grid';
+  var cardTotal = document.getElementById('cardStatTotal');
+  var cardSample = document.getElementById('cardStatSample');
+  var statDone = document.getElementById('statDone');
+  
+  statsBoard.style.display = 'grid'; 
+  statDone.innerHTML = '<span class="spinner-small"></span>';
 
-      var countPayload = { action: 'getCounts', providerName: APP.providerName, category: APP.category };
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(countPayload)
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(res) {
-        if(res && res.success) {
-          statDone.textContent = res.count.toLocaleString('en-US');
-        } else {
-          statDone.textContent = 'خطأ';
-        }
-      })
-      .catch(function(e) { statDone.textContent = 'تعذر'; });
-    } else {
-      statsBoard.style.display = 'none';
-    }
+  if (typeof HOSPITAL_TARGETS !== 'undefined' && HOSPITAL_TARGETS[APP.providerName] && HOSPITAL_TARGETS[APP.providerName].breakdown && HOSPITAL_TARGETS[APP.providerName].breakdown[APP.category]) {
+    var targetData = HOSPITAL_TARGETS[APP.providerName];
+    document.getElementById('statTotal').textContent = targetData.total_monthly.toLocaleString('en-US');
+    document.getElementById('statSample').textContent = targetData.breakdown[APP.category].toLocaleString('en-US');
+    cardTotal.style.display = 'flex';
+    cardSample.style.display = 'flex';
+    statsBoard.style.gridTemplateColumns = 'repeat(3, 1fr)';
   } else {
-    statsBoard.style.display = 'none';
+    cardTotal.style.display = 'none';
+    cardSample.style.display = 'none';
+    statsBoard.style.gridTemplateColumns = '1fr';
   }
+
+  var countPayload = { action: 'getCounts', providerName: APP.providerName, category: APP.category };
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(countPayload)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if(res && res.success) {
+      statDone.textContent = res.count.toLocaleString('en-US');
+    } else {
+      statDone.textContent = 'خطأ';
+    }
+  })
+  .catch(function(e) { statDone.textContent = 'تعذر'; });
 
   goStep(6);
 }
