@@ -74,6 +74,20 @@ function goStep2() {
   selEl.classList.remove('error');
   errEl.textContent = '';
   APP.teamName = team;
+
+  // Dynamic Employee Loading
+  var empSelect = document.getElementById('employeeSelect');
+  empSelect.innerHTML = '<option value="">— اختر الموظف —</option>';
+  if (team === 'عبد الرحمن') {
+    empSelect.innerHTML += '<option value="فتون">1 - فتون</option>';
+    empSelect.innerHTML += '<option value="جمال">2 - جمال</option>';
+    empSelect.innerHTML += '<option value="احمد حلبي">3 - احمد حلبي</option>';
+  } else {
+    empSelect.innerHTML += '<option value="1">موظف رقم 1</option>';
+    empSelect.innerHTML += '<option value="2">موظف رقم 2</option>';
+    empSelect.innerHTML += '<option value="3">موظف رقم 3</option>';
+  }
+
   goStep(2);
 }
 

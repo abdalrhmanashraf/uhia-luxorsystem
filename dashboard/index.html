@@ -3,60 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>اللوحة التنفيذية المتقدمة V3.2</title>
+<title>اللوحة التنفيذية V5.0 — UHIA الأقصر</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-<script src="../config.js?v=4"></script>
-<link rel="stylesheet" href="dashboard.css">
-<style>
-  /* تنسيقات إضافية للرسوم البيانية المتقدمة */
-  .chart-container { position: relative; height: 300px; width: 100%; margin-top: 15px; }
-  .chart-container.radar { height: 350px; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media(max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
-</style>
+<script src="../config.js?v=5"></script>
+<link rel="stylesheet" href="dashboard.css?v=5">
 </head>
 <body>
 
-<!-- Login Screen for Dashboard -->
+<!-- ══ Login Screen ══ -->
 <div class="login-screen" id="loginScreen">
-  <div class="glass-card login-card" style="max-width: 400px; margin: 100px auto; text-align: center; padding: 30px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
-    <img src="../uhia.png" alt="شعار هيئة التأمين الصحي الشامل" style="width: 120px; margin-bottom: 20px;">
-    <h1 style="font-size: 1.5rem; color: white; margin-bottom: 10px;">اللوحة التنفيذية - الدخول</h1>
-    <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px;">مخصصة لمدير الفرع والإدارة العليا فقط</p>
-    
-    <div style="text-align: right; margin-bottom: 15px;">
-      <label style="color: #cbd5e1; font-size: 0.85rem; display: block; margin-bottom: 5px;">رقم الهاتف</label>
-      <input type="text" id="phoneInput" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; outline: none;">
+  <div class="glass-card" style="max-width:400px;margin:80px auto;text-align:center;padding:30px;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:16px;">
+    <img src="../uhia.png" alt="UHIA" style="width:120px;margin-bottom:20px;">
+    <h1 style="font-size:1.4rem;color:white;margin-bottom:8px;">اللوحة التنفيذية — الدخول</h1>
+    <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:20px;">مخصصة لمدير الفرع والإدارة العليا فقط</p>
+    <div style="text-align:right;margin-bottom:15px;">
+      <label style="color:#cbd5e1;font-size:0.85rem;display:block;margin-bottom:5px;">رقم الهاتف</label>
+      <input type="text" id="phoneInput" style="width:100%;padding:10px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:white;outline:none;font-family:'Cairo',sans-serif;">
     </div>
-    
-    <div style="text-align: right; margin-bottom: 20px;">
-      <label style="color: #cbd5e1; font-size: 0.85rem; display: block; margin-bottom: 5px;">كلمة المرور</label>
-      <input type="password" id="pwdInput" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; outline: none;" onkeydown="if(event.key==='Enter') doLogin()">
+    <div style="text-align:right;margin-bottom:20px;">
+      <label style="color:#cbd5e1;font-size:0.85rem;display:block;margin-bottom:5px;">كلمة المرور</label>
+      <input type="password" id="pwdInput" style="width:100%;padding:10px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:white;outline:none;font-family:'Cairo',sans-serif;" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    
-    <div id="loginError" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 15px; text-align: center;"></div>
-    
-    <button onclick="doLogin()" id="loginBtnText" style="width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">تسجيل الدخول للوحة التحكم</button>
+    <div id="loginError" style="color:#ef4444;font-size:0.85rem;margin-bottom:15px;"></div>
+    <button onclick="doLogin()" id="loginBtnText" style="width:100%;padding:12px;background:#3b82f6;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-family:'Cairo',sans-serif;font-size:1rem;">تسجيل الدخول</button>
   </div>
 </div>
 
+<!-- ══ Dashboard Wrapper ══ -->
 <div class="dash-wrap" id="dashWrap" style="display:none">
   <aside class="sidebar">
-    <div class="sidebar-logo">
-      <img src="../uhia.png" alt="UHIA Logo">
-    </div>
+    <div class="sidebar-logo"><img src="../uhia.png" alt="UHIA"></div>
     <div class="nav-links">
-      <a href="#overview" class="active" onclick="switchSection('overview')">📊 لوحة التحكم</a>
-      <a href="#surveys" onclick="switchSection('surveys')">📋 تحليل الاستبيانات</a>
-      <a href="#staff" onclick="switchSection('staff')">🧑‍💻 أداء الموظفين</a>
+      <a href="#" class="active" onclick="switchSection('overview',this)">📊 لوحة التحكم</a>
+      <a href="#" onclick="switchSection('surveys',this)">📋 تحليل الاستبيانات</a>
+      <a href="#" onclick="switchSection('teams',this)">👥 إحصائيات الفرق</a>
+      <a href="#" onclick="switchSection('staff',this)">🧑‍💻 أداء الموظفين</a>
       <hr class="glass-divider">
       <a href="../admin/index.html" class="nav-admin">⚙️ بوابة الموظفين (التذاكر)</a>
     </div>
-    
     <div class="time-widget">
       <h3 id="clockTime">--:--:--</h3>
       <p id="clockDate">--/--/----</p>
@@ -65,199 +51,88 @@
 
   <main class="main-content">
     <header class="topbar">
-      <h1>اللوحة التنفيذية V3.2 (CRM Analytics)</h1>
+      <h1>اللوحة التنفيذية V5.0</h1>
       <div>
-        <button class="btn-refresh" onclick="openProfileModal()" style="background: #3b82f6; margin-left: 10px;">إعدادات الحساب ⚙️</button>
-        <button class="btn-refresh" onclick="loadData()" style="margin-left: 10px;">تحديث البيانات 🔄</button>
-        <button class="btn-refresh" onclick="logout()" style="background: #ef4444;">تسجيل الخروج 🚪</button>
+        <button class="btn-refresh" onclick="openProfileModal()" style="background:#3b82f6;margin-left:10px;">⚙️ إعدادات الحساب</button>
+        <button class="btn-refresh" onclick="loadData()" style="margin-left:10px;">🔄 تحديث البيانات</button>
+        <button class="btn-refresh" onclick="logout()" style="background:#ef4444;">🚪 خروج</button>
       </div>
     </header>
 
     <div class="content-sections">
-      
-      <!-- قسم نظرة عامة (الشكاوى) -->
+
+      <!-- ═══ SECTION: Overview (Complaints) ═══ -->
       <section id="overview" class="active-sec">
         <div class="kpi-grid">
-          <div class="glass-card kpi-card">
-            <div class="kpi-title">إجمالي الشكاوى</div>
-            <div class="kpi-val" id="kpiTotal">--</div>
-            <div class="kpi-icon">📝</div>
-          </div>
-          <div class="glass-card kpi-card warning">
-            <div class="kpi-title">قيد التنفيذ / المراجعة</div>
-            <div class="kpi-val" id="kpiOpen">--</div>
-            <div class="kpi-icon">⏳</div>
-          </div>
-          <div class="glass-card kpi-card success">
-            <div class="kpi-title">تم الإنجاز</div>
-            <div class="kpi-val" id="kpiResolved">--</div>
-            <div class="kpi-icon">✅</div>
-          </div>
-          <div class="glass-card kpi-card danger">
-            <div class="kpi-title">تجاوزت SLA</div>
-            <div class="kpi-val" id="kpiSla">--%</div>
-            <div class="kpi-icon">⚠️</div>
-          </div>
+          <div class="glass-card kpi-card"><div class="kpi-title">إجمالي الشكاوى</div><div class="kpi-val" id="kpiTotal">--</div><div class="kpi-icon">📝</div></div>
+          <div class="glass-card kpi-card warning"><div class="kpi-title">قيد التنفيذ</div><div class="kpi-val" id="kpiOpen">--</div><div class="kpi-icon">⏳</div></div>
+          <div class="glass-card kpi-card success"><div class="kpi-title">تم الإنجاز</div><div class="kpi-val" id="kpiResolved">--</div><div class="kpi-icon">✅</div></div>
+          <div class="glass-card kpi-card danger"><div class="kpi-title">تجاوزت SLA</div><div class="kpi-val" id="kpiSla">--%</div><div class="kpi-icon">⚠️</div></div>
         </div>
-
         <div class="grid-2 mt-20">
-          <div class="glass-panel">
-            <div class="panel-header">أكثر الجهات المخالفة (Top Facilities)</div>
-            <div class="chart-container"><canvas id="facilitiesChart"></canvas></div>
-          </div>
-          <div class="glass-panel">
-            <div class="panel-header">تصنيف الشكاوى (Root Cause)</div>
-            <div class="chart-container"><canvas id="categoriesChart"></canvas></div>
-          </div>
+          <div class="glass-panel"><div class="panel-header">أكثر الجهات (Top Facilities)</div><div class="chart-container"><canvas id="facilitiesChart"></canvas></div></div>
+          <div class="glass-panel"><div class="panel-header">تصنيف الشكاوى (Root Cause)</div><div class="chart-container"><canvas id="categoriesChart"></canvas></div></div>
         </div>
-
-        <div class="panels-grid mt-20">
-          <div class="glass-panel" style="grid-column: span 2;">
-            <div class="panel-header">مسار الشكاوى الزمني (Trend Analysis)</div>
-            <div class="chart-container"><canvas id="trendChart"></canvas></div>
-          </div>
-          <div class="glass-panel">
-            <div class="panel-header">🚨 إنذار مرضى متكررين</div>
-            <div class="table-responsive">
-              <table class="data-table" id="repeatedTable">
-                <thead><tr><th>الرقم القومي</th><th>عدد الشكاوى</th></tr></thead>
-                <tbody id="repeatedBody"><tr><td colspan="2">جار التحميل...</td></tr></tbody>
-              </table>
-            </div>
+        <div class="glass-panel mt-20"><div class="panel-header">مسار الشكاوى الزمني</div><div class="chart-container"><canvas id="trendChart"></canvas></div></div>
+        <div class="glass-panel mt-20">
+          <div class="panel-header">🚨 مرضى متكررون</div>
+          <div class="table-responsive">
+            <table class="data-table"><thead><tr><th>الرقم القومي</th><th>عدد الشكاوى</th></tr></thead><tbody id="repeatedBody"><tr><td colspan="2">جار التحميل...</td></tr></tbody></table>
           </div>
         </div>
       </section>
 
-      <!-- قسم تحليل الاستبيانات -->
+      <!-- ═══ SECTION: Surveys ═══ -->
       <section id="surveys">
         <div class="kpi-grid">
-          <div class="glass-card kpi-card">
-            <div class="kpi-title">إجمالي الاستبيانات (العينة)</div>
-            <div class="kpi-val" id="kpiSurveyTotal">--</div>
-            <div class="kpi-icon">📋</div>
-          </div>
-          <div class="glass-card kpi-card">
-            <div class="kpi-title">التقييم العام للخدمة</div>
-            <div class="kpi-val" id="kpiSurveyAvg">-- / 5</div>
-            <div class="kpi-icon">⭐</div>
-          </div>
+          <div class="glass-card kpi-card"><div class="kpi-title">📋 إجمالي الاستبيانات</div><div class="kpi-val" id="kpiSurveyTotal">--</div><div class="kpi-icon">📋</div></div>
+          <div class="glass-card kpi-card success"><div class="kpi-title">😊 نسبة الرضا العامة</div><div class="kpi-val" id="kpiSatisfaction">--%</div><div class="kpi-icon">⭐</div></div>
+          <div class="glass-card kpi-card info"><div class="kpi-title">👍 مؤشر التوصية NPS</div><div class="kpi-val" id="kpiNPS">--</div><div class="kpi-icon">👍</div></div>
+          <div class="glass-card kpi-card"><div class="kpi-title">🏥 المنشآت المُغطاة</div><div class="kpi-val" id="kpiCovered">--</div><div class="kpi-icon">🏥</div></div>
         </div>
-
-        <!-- أزرار تبويبات الاستبيانات -->
-        <div class="survey-tabs mt-20">
-          <button class="survey-tab-btn active" onclick="switchSurveyTab('s-overview')">📊 نظرة عامة</button>
-          <button class="survey-tab-btn" onclick="switchSurveyTab('s-dimensions')">🎯 الأبعاد والموردين</button>
-          <button class="survey-tab-btn" onclick="switchSurveyTab('s-questions')">❓ تحليل الأسئلة</button>
+        <div class="grid-2 mt-20">
+          <div class="glass-panel"><div class="panel-header">توزيع القطاعات (حكومي / خاص)</div><div class="chart-container"><canvas id="sectorPieChart"></canvas></div></div>
+          <div class="glass-panel"><div class="panel-header">توزيع حسب نوع المنشأة</div><div class="chart-container"><canvas id="categoryDonutChart"></canvas></div></div>
         </div>
-
-        <!-- Tab 1: Overview -->
-        <div id="s-overview" class="survey-tab-content" style="display:block;">
-          <div class="grid-2 mt-20">
-            <div class="glass-panel">
-              <div class="panel-header">1. التوزيع الزمني للأداء (Trend Line)</div>
-              <div class="chart-container"><canvas id="sTrendChart"></canvas></div>
-            </div>
-            <div class="glass-panel">
-              <div class="panel-header">2. توزيع العينات حسب الفئة (Donut)</div>
-              <div class="chart-container"><canvas id="sCatDonut"></canvas></div>
-            </div>
-          </div>
-          <div class="grid-2 mt-20">
-            <div class="glass-panel">
-              <div class="panel-header">3. متوسط التقييم حسب الفئة (Bar)</div>
-              <div class="chart-container"><canvas id="sCatBar"></canvas></div>
-            </div>
-            <div class="glass-panel">
-              <div class="panel-header">4. التوزيع الجغرافي للعينات (Bar)</div>
-              <div class="chart-container"><canvas id="sLocBar"></canvas></div>
-            </div>
-          </div>
-          <div class="glass-panel mt-20">
-            <div class="panel-header">5. المصفوفة الحرارية (Heatmap Table)</div>
-            <div class="table-responsive">
-              <table class="data-table" id="sMatrixTable">
-                <!-- Heatmap Table inserted via JS -->
-              </table>
-            </div>
-          </div>
-          
-          <div class="glass-panel mt-20">
-            <div class="panel-header">🏅 أفضل جامعي الاستبيانات (الموظفين)</div>
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead><tr><th>اسم الموظف</th><th>عدد الاستبيانات المجمعة</th></tr></thead>
-                <tbody id="sEmpTable">
-                  <!-- Employees inserted via JS -->
-                </tbody>
-              </table>
-            </div>
-          </div>
+        <div class="glass-panel mt-20"><div class="panel-header">الاتجاه الزمني للاستبيانات</div><div class="chart-container"><canvas id="surveyTrendChart"></canvas></div></div>
+        <div class="grid-2 mt-20">
+          <div class="glass-panel"><div class="panel-header">ترتيب المنشآت حسب الرضا</div><div class="chart-container tall"><canvas id="facilityRankChart"></canvas></div></div>
+          <div class="glass-panel"><div class="panel-header">تحليل إجابات الأسئلة</div><div class="chart-container tall"><canvas id="questionStackedChart"></canvas></div></div>
         </div>
-
-        <!-- Tab 2: Dimensions & Providers -->
-        <div id="s-dimensions" class="survey-tab-content" style="display:none;">
-          <div class="grid-2 mt-20">
-            <div class="glass-panel">
-              <div class="panel-header">6. توزيع الأبعاد الخمسة (Radar)</div>
-              <div class="chart-container radar"><canvas id="sRadar"></canvas></div>
-            </div>
-            <div class="glass-panel">
-              <div class="panel-header">7. مؤشر الولاء الصافي (NPS Gauge)</div>
-              <div class="chart-container"><canvas id="sNps"></canvas></div>
-            </div>
-          </div>
-          <div class="glass-panel mt-20">
-            <div class="panel-header">8. أداء الموردين: التقييم مقابل حجم العينة (Scatter Plot)</div>
-            <div class="chart-container"><canvas id="sScatter"></canvas></div>
-          </div>
-          <div class="glass-panel mt-20">
-            <div class="panel-header">9. ترتيب الموردين (Ranked Bar Chart)</div>
-            <div class="chart-container" style="height: 400px;"><canvas id="sFacRank"></canvas></div>
-          </div>
+        <div class="grid-2 mt-20">
+          <div class="glass-panel"><div class="panel-header">مؤشر التوصية NPS</div><div class="chart-container"><canvas id="npsGaugeChart"></canvas></div></div>
+          <div class="glass-panel"><div class="panel-header">أداء المنشآت (Scatter)</div><div class="chart-container"><canvas id="facilityScatterChart"></canvas></div></div>
         </div>
-
-        <!-- Tab 3: Questions Analysis -->
-        <div id="s-questions" class="survey-tab-content" style="display:none;">
-          <div class="glass-panel mt-20">
-            <div class="panel-header">10. أداء الأسئلة مقسماً بالفئات (Grouped Bar)</div>
-            <div class="chart-container" style="height: 400px;"><canvas id="sQuesGrouped"></canvas></div>
+        <div class="glass-panel mt-20"><div class="panel-header">التوزيع الجغرافي</div><div class="chart-container"><canvas id="locationBarChart"></canvas></div></div>
+        <div class="glass-panel mt-20">
+          <div class="panel-header">📋 أحدث الاستبيانات</div>
+          <div class="table-responsive">
+            <table class="data-table"><thead><tr><th>التاريخ</th><th>الفريق</th><th>الموظف</th><th>المنشأة</th><th>المكان</th><th>الرضا%</th></tr></thead><tbody id="recentSurveysBody"><tr><td colspan="6">جاري التحميل...</td></tr></tbody></table>
           </div>
         </div>
       </section>
 
-      <!-- قسم الموظفين -->
+      <!-- ═══ SECTION: Teams ═══ -->
+      <section id="teams">
+        <div class="grid-2">
+          <div class="glass-panel"><div class="panel-header">📊 عدد الاستبيانات لكل فريق</div><div class="chart-container"><canvas id="teamBarChart"></canvas></div></div>
+          <div class="glass-panel"><div class="panel-header">🏆 أعلى 3 فرق</div><div id="top3Container" class="top3-grid"></div></div>
+        </div>
+        <div class="glass-panel mt-20">
+          <div class="panel-header">🗺️ توزيع الفرق على المنشآت</div>
+          <div class="table-responsive">
+            <table class="data-table" id="teamFacilityTable"><thead></thead><tbody></tbody></table>
+          </div>
+        </div>
+        <div class="glass-panel mt-20"><div class="panel-header">👤 أداء الموظفين (الأفراد)</div><div class="chart-container tall"><canvas id="employeeBarChart"></canvas></div></div>
+      </section>
+
+      <!-- ═══ SECTION: Staff (Complaints) ═══ -->
       <section id="staff">
         <div class="glass-panel">
-          <div class="panel-header">🏆 لوحة الشرف للتميز والإنجاز</div>
+          <div class="panel-header">🏆 لوحة الشرف — إنجاز التذاكر</div>
           <div class="table-responsive">
-            <table class="data-table" id="staffTable">
-              <thead><tr><th>اسم الموظف</th><th>تذاكر تم حلها</th><th>سرعة الإنجاز</th></tr></thead>
-              <tbody id="staffBody"><tr><td colspan="3">لا توجد بيانات حالياً</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- سجل الاستبيانات الأخيرة -->
-      <section id="recent-surveys" class="mt-20">
-        <div class="glass-panel">
-          <div class="panel-header">📋 أحدث الاستبيانات المدخلة</div>
-          <div class="table-responsive">
-            <table class="data-table" id="recentSurveysTable">
-              <thead>
-                <tr>
-                  <th>التاريخ</th>
-                  <th>اسم المريض</th>
-                  <th>الرقم القومي</th>
-                  <th>الهاتف</th>
-                  <th>المكان/الفئة</th>
-                  <th>متوسط التقييم</th>
-                </tr>
-              </thead>
-              <tbody id="recentSurveysBody">
-                <tr><td colspan="6">جاري تحميل أحدث الاستبيانات...</td></tr>
-              </tbody>
-            </table>
+            <table class="data-table"><thead><tr><th>الموظف</th><th>تذاكر محلولة</th><th>السرعة</th></tr></thead><tbody id="staffBody"><tr><td colspan="3">لا توجد بيانات</td></tr></tbody></table>
           </div>
         </div>
       </section>
@@ -266,35 +141,30 @@
   </main>
 </div>
 
-<!-- نافذة إعدادات الحساب (Profile Modal) -->
-<div class="login-screen" id="profileModal" style="display:none; z-index: 1000;">
-  <div class="glass-card login-card" style="max-width: 400px; margin: 50px auto; padding: 25px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; position: relative;">
-    <button onclick="closeProfileModal()" style="position: absolute; top: 10px; left: 10px; background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;">❌</button>
-    <h2 style="color: white; margin-bottom: 20px; text-align: center;">إعدادات الحساب ⚙️</h2>
-    
-    <div style="margin-bottom: 15px;">
-      <label style="color: #cbd5e1; font-size: 0.85rem; display: block; margin-bottom: 5px;">رقم الهاتف الجديد</label>
-      <input type="text" id="profNewPhone" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white;" placeholder="اختياري (اتركه فارغاً لعدم التغيير)">
+<!-- ══ Profile Modal ══ -->
+<div class="login-screen" id="profileModal" style="display:none;z-index:1000;">
+  <div class="glass-card" style="max-width:400px;margin:50px auto;padding:25px;background:rgba(15,23,42,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:12px;position:relative;">
+    <button onclick="closeProfileModal()" style="position:absolute;top:10px;left:10px;background:none;border:none;color:white;font-size:1.2rem;cursor:pointer;">❌</button>
+    <h2 style="color:white;margin-bottom:20px;text-align:center;">إعدادات الحساب ⚙️</h2>
+    <div style="margin-bottom:15px;">
+      <label style="color:#cbd5e1;font-size:0.85rem;display:block;margin-bottom:5px;">رقم الهاتف الجديد</label>
+      <input type="text" id="profNewPhone" style="width:100%;padding:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:white;" placeholder="اختياري">
     </div>
-    
-    <div style="margin-bottom: 15px;">
-      <label style="color: #cbd5e1; font-size: 0.85rem; display: block; margin-bottom: 5px;">كلمة المرور الحالية (مطلوبة للتأكيد)</label>
-      <input type="password" id="profOldPwd" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white;">
+    <div style="margin-bottom:15px;">
+      <label style="color:#cbd5e1;font-size:0.85rem;display:block;margin-bottom:5px;">كلمة المرور الحالية (مطلوبة)</label>
+      <input type="password" id="profOldPwd" style="width:100%;padding:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:white;">
     </div>
-    
-    <div style="margin-bottom: 15px;">
-      <label style="color: #cbd5e1; font-size: 0.85rem; display: block; margin-bottom: 5px;">كلمة المرور الجديدة</label>
-      <input type="password" id="profNewPwd" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white;" placeholder="اختياري (اتركه فارغاً لعدم التغيير)">
+    <div style="margin-bottom:15px;">
+      <label style="color:#cbd5e1;font-size:0.85rem;display:block;margin-bottom:5px;">كلمة المرور الجديدة</label>
+      <input type="password" id="profNewPwd" style="width:100%;padding:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:white;" placeholder="اختياري">
     </div>
-
-    <div id="profError" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 15px; text-align: center;"></div>
-    
-    <button onclick="saveProfile()" id="profSaveBtn" style="width: 100%; padding: 10px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">حفظ التعديلات</button>
+    <div id="profError" style="color:#ef4444;font-size:0.85rem;margin-bottom:15px;text-align:center;"></div>
+    <button onclick="saveProfile()" id="profSaveBtn" style="width:100%;padding:10px;background:#10b981;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-family:'Cairo',sans-serif;">حفظ التعديلات</button>
   </div>
 </div>
 
 <div class="full-loading" id="fullLoading" style="display:none"><div class="spinner"></div></div>
 
-<script src="dashboard.js?v=4"></script>
+<script src="dashboard.js?v=5"></script>
 </body>
 </html>
