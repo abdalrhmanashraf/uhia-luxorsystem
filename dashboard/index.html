@@ -115,16 +115,26 @@
       <!-- ═══ SECTION: Teams ═══ -->
       <section id="teams">
         <div class="grid-2">
-          <div class="glass-panel"><div class="panel-header">📊 عدد الاستبيانات لكل فريق</div><div class="chart-container"><canvas id="teamBarChart"></canvas></div></div>
-          <div class="glass-panel"><div class="panel-header">🏆 أعلى 3 فرق</div><div id="top3Container" class="top3-grid"></div></div>
+          <div class="glass-panel"><div class="panel-header" style="font-size:1.2rem;">📊 أداء الفرق (العدد ونسبة الرضا)</div><div class="chart-container tall"><canvas id="teamMixedChart"></canvas></div></div>
+          <div class="glass-panel"><div class="panel-header" style="font-size:1.2rem;">🏆 أعلى 3 فرق</div><div id="top3Container" class="top3-grid"></div></div>
         </div>
         <div class="glass-panel mt-20">
-          <div class="panel-header">🗺️ توزيع الفرق على المنشآت</div>
+          <div class="panel-header" style="font-size:1.3rem; color:#facc15;">📋 التقرير الشامل لأداء الفرق</div>
           <div class="table-responsive">
-            <table class="data-table" id="teamFacilityTable"><thead></thead><tbody></tbody></table>
+            <table class="data-table" id="teamDetailsTable">
+              <thead>
+                <tr>
+                  <th>اسم الفريق</th>
+                  <th>إجمالي الاستبيانات</th>
+                  <th>نسبة الرضا العامة %</th>
+                  <th>المنشآت التي تم تغطيتها</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
           </div>
         </div>
-        <div class="glass-panel mt-20"><div class="panel-header">👤 أداء الموظفين (الأفراد)</div><div class="chart-container tall"><canvas id="employeeBarChart"></canvas></div></div>
+        <div class="glass-panel mt-20"><div class="panel-header" style="font-size:1.2rem;">👤 أداء الموظفين (الأفراد)</div><div class="chart-container tall"><canvas id="employeeBarChart"></canvas></div></div>
       </section>
 
       <!-- ═══ SECTION: Staff (Complaints) ═══ -->
