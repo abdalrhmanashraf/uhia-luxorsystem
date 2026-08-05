@@ -79,9 +79,11 @@ function goStep2() {
   var empSelect = document.getElementById('employeeSelect');
   empSelect.innerHTML = '<option value="">— اختر الموظف —</option>';
   if (team === 'عبد الرحمن') {
-    empSelect.innerHTML += '<option value="فتون">1 - فتون</option>';
-    empSelect.innerHTML += '<option value="جمال">2 - جمال</option>';
-    empSelect.innerHTML += '<option value="احمد حلبي">3 - احمد حلبي</option>';
+    empSelect.innerHTML += '<option value="جمال">1 - جمال</option>';
+    empSelect.innerHTML += '<option value="فتون">2 - فتون</option>';
+    empSelect.innerHTML += '<option value="عبدالرحمن">3 - عبدالرحمن</option>';
+    empSelect.innerHTML += '<option value="احمد">4 - احمد</option>';
+    empSelect.innerHTML += '<option value="هشام">5 - هشام</option>';
   } else {
     empSelect.innerHTML += '<option value="1">موظف رقم 1</option>';
     empSelect.innerHTML += '<option value="2">موظف رقم 2</option>';
