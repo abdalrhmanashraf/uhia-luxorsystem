@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>داشبورد الاستبيانات — UHIA الأقصر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="../config.js?v=5"></script>
+<link rel="stylesheet" href="dashboard.css?v=6">
+<style>
+  .dash-wrap { display: flex; flex-direction: column; min-height: 100vh; }
+  .top-navbar {
+    background: rgba(10, 15, 28, 0.85);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 5px 30px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .top-navbar .logo img { height: 50px; filter: drop-shadow(0 0 20px rgba(59,130,246,0.4)); }
+  .top-navbar .nav-tabs { display: flex; gap: 15px; }
+  .top-navbar .nav-tabs a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: 0.3s;
+  }
+  .top-navbar .nav-tabs a.active {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), transparent);
+    color: var(--text-main);
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+  }
+  .top-navbar .nav-tabs a:hover:not(.active) { background: rgba(255,255,255,0.05); }
+  
+  .content-sections { padding: 40px; flex: 1; overflow-y: auto; }
+</style>
+</head>
+<body>
+
+<div class="dash-wrap">
+  <!-- ══ Top Navbar ══ -->
+  <nav class="top-navbar">
+    <div class="logo"><img src="../uhia.png" alt="UHIA"></div>
+    <div class="nav-tabs">
+      <a href="#" class="active" onclick="switchSection('surveys', this)">📋 تحليل الاستبيانات</a>
+      <a href="#" onclick="switchSection('teams', this)">👥 إحصائيات الفرق</a>
+    </div>
+    <div class="time-widget" style="padding:0;text-align:left;">
+      <h3 id="clockTime" style="font-size:1.3rem;">--:--:--</h3>
+      <p id="clockDate" style="font-size:0.8rem;">--/--/----</p>
+    </div>
+  </nav>
+
+  <!-- ══ Main Content ══ -->
+  <div class="content-sections">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;">
+      <h1 style="font-size: 1.8rem; font-weight: 900; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">مؤشرات الأداء - التأمين الصحي الشامل</h1>
+      <button class="btn-refresh" onclick="loadData()">🔄 تحديث البيانات</button>
+    </div>
+
+    <!-- ═══ SECTION: Surveys ═══ -->
+    <section id="surveys" class="active-sec">
+      <div class="kpi-grid">
+        <div class="kpi-card glass-card info">
+          <div class="kpi-title">إجمالي الاستبيانات</div><div class="kpi-val" id="kpiSurveyTotal">0</div><div class="kpi-icon">📋</div>
+        </div>
+        <div class="kpi-card glass-card success">
+          <div class="kpi-title">نسبة الرضا العامة</div><div class="kpi-val" id="kpiSatisfaction">0%</div><div class="kpi-icon">⭐</div>
+        </div>
+        <div class="kpi-card glass-card warning">
+          <div class="kpi-title">مؤشر التوصية NPS</div><div class="kpi-val" id="kpiNPS">0</div><div class="kpi-icon">👍</div>
+        </div>
+        <div class="kpi-card glass-card">
+          <div class="kpi-title">المنشآت المغطاة</div><div class="kpi-val" id="kpiCovered">0</div><div class="kpi-icon">🏥</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="glass-panel"><div class="panel-header">توزيع الاستبيانات (حكومي / خاص)</div><div class="chart-container"><canvas id="sectorPieChart"></canvas></div></div>
+        <div class="glass-panel"><div class="panel-header">التوزيع حسب نوع المنشأة</div><div class="chart-container"><canvas id="categoryDonutChart"></canvas></div></div>
+      </div>
+
+      <div class="glass-panel mt-20"><div class="panel-header">المسار الزمني للاستبيانات</div><div class="chart-container"><canvas id="surveyTrendChart"></canvas></div></div>
+
+      <div class="grid-2 mt-20">
+        <div class="glass-panel"><div class="panel-header">ترتيب المنشآت حسب الرضا</div><div class="chart-container tall"><canvas id="facilityRankChart"></canvas></div></div>
+        <div class="glass-panel"><div class="panel-header">تحليل إجابات الأسئلة (نموذج 3D)</div><div class="chart-container tall"><canvas id="questionStackedChart"></canvas></div></div>
+      </div>
+
+      <div class="grid-2 mt-20">
+        <div class="glass-panel"><div class="panel-header">مؤشر التوصية NPS</div><div class="chart-container"><canvas id="npsGaugeChart"></canvas></div></div>
+        <div class="glass-panel"><div class="panel-header">أداء المنشآت (العدد مقابل الرضا)</div><div class="chart-container"><canvas id="facilityScatterChart"></canvas></div></div>
+      </div>
+
+      <div class="glass-panel mt-20"><div class="panel-header">التوزيع الجغرافي</div><div class="chart-container"><canvas id="locationBarChart"></canvas></div></div>
+
+      <div class="glass-panel mt-20">
+        <div class="panel-header">أحدث 10 استبيانات</div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead><tr><th>التاريخ</th><th>الفريق</th><th>الموظف</th><th>المنشأة</th><th>المدينة</th><th>نسبة الرضا</th></tr></thead>
+            <tbody id="recentSurveysBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION: Teams ═══ -->
+    <section id="teams">
+      <div class="grid-2">
+        <div class="glass-panel"><div class="panel-header" style="font-size:1.2rem;">📊 أداء الفرق (العدد ونسبة الرضا)</div><div class="chart-container tall"><canvas id="teamMixedChart"></canvas></div></div>
+        <div class="glass-panel"><div class="panel-header" style="font-size:1.2rem;">🏆 أعلى 3 فرق</div><div id="top3Container" class="top3-grid"></div></div>
+      </div>
+      <div class="glass-panel mt-20">
+        <div class="panel-header" style="font-size:1.3rem; color:#facc15;">📋 التقرير الشامل لأداء الفرق</div>
+        <div class="table-responsive">
+          <table class="data-table" id="teamDetailsTable">
+            <thead>
+              <tr>
+                <th>اسم الفريق</th>
+                <th>إجمالي الاستبيانات</th>
+                <th>نسبة الرضا العامة %</th>
+                <th>المنشآت التي تم تغطيتها</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="glass-panel mt-20"><div class="panel-header" style="font-size:1.2rem;">👤 أداء الموظفين (الأفراد)</div><div class="chart-container tall"><canvas id="employeeBarChart"></canvas></div></div>
+    </section>
+  </div>
+</div>
+
+<div class="full-loading" id="fullLoading"><div class="spinner"></div></div>
+
+<script src="surveys.js?v=6"></script>
+</body>
+</html>
