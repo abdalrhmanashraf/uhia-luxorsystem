@@ -104,12 +104,15 @@
           <div class="glass-panel"><div class="panel-header">أداء المنشآت (Scatter)</div><div class="chart-container"><canvas id="facilityScatterChart"></canvas></div></div>
         </div>
         <div class="glass-panel mt-20"><div class="panel-header">التوزيع الجغرافي</div><div class="chart-container"><canvas id="locationBarChart"></canvas></div></div>
-        <div class="glass-panel mt-20">
-          <div class="panel-header">📋 أحدث الاستبيانات</div>
-          <div class="table-responsive">
-            <table class="data-table"><thead><tr><th>التاريخ</th><th>الفريق</th><th>الموظف</th><th>المنشأة</th><th>المكان</th><th>الرضا%</th></tr></thead><tbody id="recentSurveysBody"><tr><td colspan="6">جاري التحميل...</td></tr></tbody></table>
-          </div>
+        <div class="glass-panel mt-20" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+        <div class="panel-header">أحدث 10 استبيانات</div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead><tr><th>المنشأة</th><th>نسبة الرضا</th></tr></thead>
+            <tbody id="recentSurveysBody"></tbody>
+          </table>
         </div>
+      </div>
       </section>
 
       <!-- ═══ SECTION: Teams ═══ -->

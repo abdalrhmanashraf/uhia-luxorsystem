@@ -270,16 +270,12 @@ function renderTeamDetailsTable(teamStats) {
 // ─── Recent Surveys Table ───
 function renderRecentSurveys(surveys) {
   var tb = document.getElementById('recentSurveysBody');
-  if (!surveys||surveys.length===0) { tb.innerHTML='<tr><td colspan="6" style="text-align:center;">لا توجد استبيانات</td></tr>'; return; }
+  if (!surveys||surveys.length===0) { tb.innerHTML='<tr><td colspan="2" style="text-align:center;">لا توجد استبيانات</td></tr>'; return; }
   var h = '';
   surveys.forEach(function(s) {
     var color = s.satisfaction >= 70 ? '#10b981' : (s.satisfaction >= 50 ? '#f59e0b' : '#ef4444');
     h += '<tr>';
-    h += '<td>'+s.date+'</td>';
-    h += '<td>'+s.team+'</td>';
-    h += '<td>'+s.employee+'</td>';
     h += '<td>'+s.facility+'</td>';
-    h += '<td>'+s.location+'</td>';
     h += '<td><strong style="color:'+color+'">'+s.satisfaction+'%</strong></td>';
     h += '</tr>';
   });
