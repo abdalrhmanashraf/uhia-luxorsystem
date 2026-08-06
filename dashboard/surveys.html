@@ -3,109 +3,279 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>داشبورد الاستبيانات — UHIA الأقصر</title>
+<title>لوحة مؤشرات الأداء — UHIA الأقصر</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="../config.js?v=5"></script>
-<link rel="stylesheet" href="dashboard.css?v=6">
-<style>
-  .dash-wrap { display: flex; flex-direction: column; min-height: 100vh; }
-  .top-navbar {
-    background: rgba(10, 15, 28, 0.85);
-    border-bottom: 1px solid var(--glass-border);
-    padding: 15px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 5px 30px rgba(0,0,0,0.5);
-    backdrop-filter: blur(10px);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .top-navbar .logo img { height: 50px; filter: drop-shadow(0 0 20px rgba(59,130,246,0.4)); }
-  .top-navbar .nav-tabs { display: flex; gap: 15px; }
-  .top-navbar .nav-tabs a {
-    color: var(--text-muted);
-    text-decoration: none;
-    font-weight: 700;
-    padding: 10px 20px;
-    border-radius: 8px;
-    transition: 0.3s;
-  }
-  .top-navbar .nav-tabs a.active {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), transparent);
-    color: var(--text-main);
-    border: 1px solid rgba(59, 130, 246, 0.5);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-  }
-  .top-navbar .nav-tabs a:hover:not(.active) { background: rgba(255,255,255,0.05); }
-  
-  .content-sections { padding: 40px; flex: 1; overflow-y: auto; }
-</style>
+<script src="../config.js?v=7"></script>
+<link rel="stylesheet" href="dashboard.css?v=7">
 </head>
 <body>
 
+<!-- Particle Canvas -->
+<canvas id="particleCanvas"></canvas>
+
 <div class="dash-wrap">
+
   <!-- ══ Top Navbar ══ -->
   <nav class="top-navbar">
-    <div class="logo"><img src="../uhia.png" alt="UHIA"></div>
+    <div class="logo"><img src="../uhia.png" alt="UHIA" onerror="this.style.display='none'"></div>
     <div class="nav-tabs">
-      <a href="#" class="active" onclick="switchSection('surveys', this)">📋 تحليل الاستبيانات</a>
-      <a href="#" onclick="switchSection('teams', this)">👥 إحصائيات الفرق</a>
+      <a href="#" class="active" onclick="switchSection('surveys',this)">📊 مؤشرات الاستبيانات</a>
+      <a href="#" onclick="switchSection('teams',this)">👥 أداء الفرق</a>
     </div>
-    <div class="time-widget" style="padding:0;text-align:left;">
-      <h3 id="clockTime" style="font-size:1.3rem;">--:--:--</h3>
-      <p id="clockDate" style="font-size:0.8rem;">--/--/----</p>
+    <div class="time-widget">
+      <h3 id="clockTime">--:--:--</h3>
+      <p id="clockDate">--/--/----</p>
     </div>
   </nav>
 
-  <!-- ══ Main Content ══ -->
+  <!-- ══ Content ══ -->
   <div class="content-sections">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;">
-      <h1 style="font-size: 1.8rem; font-weight: 900; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">مؤشرات الأداء - التأمين الصحي الشامل</h1>
-      <button class="btn-refresh" onclick="loadData()">🔄 تحديث البيانات</button>
-    </div>
 
-    <!-- ═══ SECTION: Surveys ═══ -->
+    <!-- ═══════════════════════════════════
+         SECTION: Surveys
+         ═══════════════════════════════════ -->
     <section id="surveys" class="active-sec">
+
+      <div class="page-header">
+        <h1>🏥 لوحة مؤشرات جودة الخدمة الصحية</h1>
+        <button class="btn-refresh" onclick="loadData()">🔄 تحديث البيانات</button>
+      </div>
+
+      <!-- KPIs -->
       <div class="kpi-grid">
         <div class="kpi-card glass-card info">
-          <div class="kpi-title">إجمالي الاستبيانات</div><div class="kpi-val" id="kpiSurveyTotal">0</div><div class="kpi-icon">📋</div>
+          <div class="kpi-title">إجمالي الاستبيانات المُنجزة</div>
+          <div class="kpi-val" id="kpiSurveyTotal">—</div>
+          <canvas class="kpi-sparkline" id="sparkTotal"></canvas>
+          <div class="kpi-icon">📋</div>
         </div>
         <div class="kpi-card glass-card success">
-          <div class="kpi-title">نسبة الرضا العامة</div><div class="kpi-val" id="kpiSatisfaction">0%</div><div class="kpi-icon">⭐</div>
+          <div class="kpi-title">متوسط نسبة رضا المنتفعين</div>
+          <div class="kpi-val" id="kpiSatisfaction">—</div>
+          <div class="kpi-trend" id="kpiSatTrend" style="color:#34d399"></div>
+          <div class="kpi-icon">⭐</div>
         </div>
         <div class="kpi-card glass-card warning">
-          <div class="kpi-title">مؤشر التوصية NPS</div><div class="kpi-val" id="kpiNPS">0</div><div class="kpi-icon">👍</div>
+          <div class="kpi-title">مؤشر التوصية (NPS)</div>
+          <div class="kpi-val" id="kpiNPS">—</div>
+          <div style="font-size:0.75rem;color:#94a3b8;margin-top:6px;">نسبة مَن يوصون بالخدمة</div>
+          <div class="kpi-icon">👍</div>
         </div>
-        <div class="kpi-card glass-card">
-          <div class="kpi-title">المنشآت المغطاة</div><div class="kpi-val" id="kpiCovered">0</div><div class="kpi-icon">🏥</div>
+        <div class="kpi-card glass-card purple">
+          <div class="kpi-title">المنشآت الصحية المغطاة</div>
+          <div class="kpi-val" id="kpiCovered">—</div>
+          <div style="font-size:0.75rem;color:#94a3b8;margin-top:6px;">من إجمالي المنشآت المسجلة</div>
+          <div class="kpi-icon">🏥</div>
         </div>
       </div>
 
+      <!-- Row 1: Sector Pie + Category Donut -->
       <div class="grid-2">
-        <div class="glass-panel"><div class="panel-header">توزيع الاستبيانات (حكومي / خاص)</div><div class="chart-container"><canvas id="sectorPieChart"></canvas></div></div>
-        <div class="glass-panel"><div class="panel-header">التوزيع حسب نوع المنشأة</div><div class="chart-container"><canvas id="categoryDonutChart"></canvas></div></div>
+
+        <div class="chart-panel">
+          <div class="panel-header-block">
+            <div class="panel-title-row">
+              <div class="panel-title"><span class="title-icon">🥧</span> توزيع الاستبيانات بين القطاعين</div>
+              <span class="panel-badge blue">توزيع القطاعات</span>
+            </div>
+            <p class="panel-desc">يُظهر هذا المخطط النسبة المئوية للاستبيانات التي تمت في المنشآت الحكومية مقارنةً بالمنشآت الخاصة المتعاقدة. يساعد في قياس مدى شمولية التغطية الميدانية.</p>
+            <div class="panel-insight insight-info" id="smartInsightSector">
+              <span>💡</span><span>جارٍ تحليل البيانات...</span>
+            </div>
+          </div>
+          <div class="chart-body"><div class="chart-container"><canvas id="sectorPieChart"></canvas></div></div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="panel-header-block">
+            <div class="panel-title-row">
+              <div class="panel-title"><span class="title-icon">🍩</span> الاستبيانات حسب نوع المنشأة</div>
+              <span class="panel-badge purple">تصنيف المنشآت</span>
+            </div>
+            <p class="panel-desc">يُصنّف هذا المخطط الاستبيانات وفق طبيعة المنشأة الصحية (وحدات رعاية أولية، مستشفيات، مستشفيات خاصة، معامل، صيدليات...). يكشف أي أنواع المنشآت تحظى بزيارات أكثر.</p>
+            <div class="panel-insight insight-info" id="smartInsightCat">
+              <span>💡</span><span>جارٍ تحليل البيانات...</span>
+            </div>
+          </div>
+          <div class="chart-body"><div class="chart-container"><canvas id="categoryDonutChart"></canvas></div></div>
+        </div>
+
       </div>
 
-      <div class="glass-panel mt-20"><div class="panel-header">المسار الزمني للاستبيانات</div><div class="chart-container"><canvas id="surveyTrendChart"></canvas></div></div>
-
-      <div class="grid-2 mt-20">
-        <div class="glass-panel"><div class="panel-header">ترتيب المنشآت حسب الرضا</div><div class="chart-container tall"><canvas id="facilityRankChart"></canvas></div></div>
-        <div class="glass-panel"><div class="panel-header">تحليل إجابات الأسئلة (نموذج 3D)</div><div class="chart-container tall"><canvas id="questionStackedChart"></canvas></div></div>
+      <!-- Row 2: Trend Line -->
+      <div class="chart-panel mt-24">
+        <div class="panel-header-block">
+          <div class="panel-title-row">
+            <div class="panel-title"><span class="title-icon">📈</span> المسار الزمني اليومي للاستبيانات</div>
+            <span class="panel-badge green">النشاط الميداني</span>
+          </div>
+          <p class="panel-desc">يتتبع هذا المخطط حركة العمل الميداني يوماً بيوم، ويُظهر الأيام التي بلغ فيها النشاط ذروته. تتيح القراءة اليومية رصد أي انقطاع أو توقف غير مبرر في جمع البيانات.</p>
+          <div class="panel-insight insight-info" id="smartInsightTrend">
+            <span>💡</span><span>جارٍ تحليل البيانات...</span>
+          </div>
+        </div>
+        <div class="chart-body"><div class="chart-container"><canvas id="surveyTrendChart"></canvas></div></div>
       </div>
 
-      <div class="grid-2 mt-20">
-        <div class="glass-panel"><div class="panel-header">مؤشر التوصية NPS</div><div class="chart-container"><canvas id="npsGaugeChart"></canvas></div></div>
-        <div class="glass-panel"><div class="panel-header">أداء المنشآت (العدد مقابل الرضا)</div><div class="chart-container"><canvas id="facilityScatterChart"></canvas></div></div>
+      <!-- Row 3: Facility Rank + Question Analysis -->
+      <div class="grid-2 mt-24">
+
+        <div class="chart-panel">
+          <div class="panel-header-block">
+            <div class="panel-title-row">
+              <div class="panel-title"><span class="title-icon">🏆</span> ترتيب المنشآت بنسبة الرضا</div>
+              <span class="panel-badge yellow">مقارنة الأداء</span>
+            </div>
+            <p class="panel-desc">يُرتّب المنشآت من الأعلى إلى الأدنى وفق متوسط رضا المنتفعين. اللون الأخضر يعني أداء ممتازاً (≥70%)، والأصفر متوسطاً، والأحمر يستدعي تدخلاً عاجلاً.</p>
+            <div class="panel-insight insight-info" id="smartInsightFac">
+              <span>💡</span><span>جارٍ تحليل البيانات...</span>
+            </div>
+          </div>
+          <div class="chart-body"><div class="chart-container tall"><canvas id="facilityRankChart"></canvas></div></div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="panel-header-block">
+            <div class="panel-title-row">
+              <div class="panel-title"><span class="title-icon">📊</span> تحليل إجابات أسئلة الاستبيان</div>
+              <span class="panel-badge blue">تفصيل الإجابات</span>
+            </div>
+            <p class="panel-desc">يُفصّل هذا المخطط توزيع إجابات كل سؤال (راضٍ جداً / راضٍ / غير راضٍ). يُمكّن من تحديد السؤال الأعلى نسبة عدم الرضا ومعالجة سببه مباشرةً.</p>
+            <div class="panel-insight insight-info" id="smartInsightQ">
+              <span>💡</span><span>جارٍ تحليل البيانات...</span>
+            </div>
+          </div>
+          <div class="chart-body"><div class="chart-container tall"><canvas id="questionStackedChart"></canvas></div></div>
+        </div>
+
       </div>
 
-      <div class="glass-panel mt-20"><div class="panel-header">التوزيع الجغرافي</div><div class="chart-container"><canvas id="locationBarChart"></canvas></div></div>
+      <!-- Row 4: Radar Chart -->
+      <div class="chart-panel mt-24">
+        <div class="panel-header-block">
+          <div class="panel-title-row">
+            <div class="panel-title"><span class="title-icon">🕸️</span> مخطط الرادار — جودة الخدمة من كل الجوانب</div>
+            <span class="panel-badge purple">الرؤية الشاملة</span>
+          </div>
+          <p class="panel-desc">يقيس هذا المخطط الشبكي جودة الخدمة من ستة محاور رئيسية في آنٍ واحد: سهولة الحجز، جودة الاستقبال، الكفاءة الطبية، الصيدلية، نظافة المنشأة، وسرعة الإجراءات. كلما اتسعت الشبكة اقتربنا من الكمال.</p>
+          <div class="panel-insight insight-info" id="smartInsightRadar">
+            <span>💡</span><span>جارٍ تحليل البيانات...</span>
+          </div>
+        </div>
+        <div class="chart-body"><div class="chart-container" style="height:400px;max-width:600px;margin:0 auto;"><canvas id="radarChart"></canvas></div></div>
+      </div>
 
-      <div class="glass-panel mt-20" style="max-width: 600px; margin-left: auto; margin-right: auto;">
-        <div class="panel-header">أحدث 10 استبيانات</div>
+      <!-- Row 5: Heatmap Matrix -->
+      <div class="chart-panel mt-24">
+        <div class="panel-header-block">
+          <div class="panel-title-row">
+            <div class="panel-title"><span class="title-icon">🌡️</span> الخريطة الحرارية — أداء المنشآت عبر المحاور</div>
+            <span class="panel-badge red">كشف نقاط الضعف</span>
+          </div>
+          <p class="panel-desc">تعرض هذه الخريطة أداء كل منشأة في كل محور خدمة بشكل مرئي: المربعات الخضراء تعني رضا مرتفعاً، والصفراء متوسطة، والحمراء تحتاج تدخلاً. بلمحة واحدة تتكشف المشكلة الحقيقية في كل مستشفى.</p>
+          <div class="panel-insight insight-info" id="smartInsightHeatmap">
+            <span>💡</span><span>جارٍ تحليل البيانات...</span>
+          </div>
+        </div>
+        <div class="chart-body">
+          <div class="heatmap-wrap" id="heatmapWrap">
+            <p style="text-align:center;color:#94a3b8;padding:40px 0;">جارٍ تحميل البيانات...</p>
+          </div>
+          <div class="heatmap-legend">
+            <span>مستوى الرضا:</span>
+            <div class="legend-dot hm-90"></div><span>ممتاز (90%+)</span>
+            <div class="legend-dot hm-70"></div><span>جيد (70-89%)</span>
+            <div class="legend-dot hm-50"></div><span>متوسط (50-69%)</span>
+            <div class="legend-dot hm-30"></div><span>ضعيف (&lt;50%)</span>
+            <div class="legend-dot hm-0"></div><span>لا توجد بيانات</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 6: Polar Area + NPS Gauge -->
+      <div class="grid-2 mt-24">
+
+        <div class="chart-panel">
+          <div class="panel-header-block">
+            <div class="panel-title-row">
+              <div class="panel-title"><span class="title-icon">🎯</span> المخطط القطبي — التوزيع الجغرافي ونسبة الرضا</div>
+              <span class="panel-badge cyan">مقارنة المناطق</span>
+            </div>
+            <p class="panel-desc">يوضح هذا المخطط الدائري حجم الاستبيانات في كل منطقة جغرافية (إسنا، أرمنت، الأقصر...). حجم الشريحة يعكس حجم العينة، ولونها يعكس مستوى الرضا — أداةٌ فعّالة للكشف عن الفجوة الجغرافية.</p>
+            <div class="panel-insight insight-info" id="smartInsightPolar">
+              <span>💡</span><span>جارٍ تحليل البيانات...</span>
+            </div>
+          </div>
+          <div class="chart-body"><div class="chart-container"><canvas id="polarChart"></canvas></div></div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="panel-header-block">
+            <div class="panel-title-row">
+              <div class="panel-title"><span class="title-icon">🧭</span> مقياس توصية المنتفعين (NPS)</div>
+              <span class="panel-badge green">ولاء المريض</span>
+            </div>
+            <p class="panel-desc">يُظهر هذا المقياس نسبة المنتفعين الذين يوصون أصدقاءهم وذويهم بتلقي الخدمة في المنشأة. وهو مؤشر عالمي لقياس الثقة والرضا العميق. كلما ارتفعت النسبة، كلما دلّت على جودة حقيقية.</p>
+            <div class="panel-insight insight-info" id="smartInsightNPS">
+              <span>💡</span><span>جارٍ تحليل البيانات...</span>
+            </div>
+          </div>
+          <div class="chart-body"><div class="chart-container"><canvas id="npsGaugeChart"></canvas></div></div>
+        </div>
+
+      </div>
+
+      <!-- Row 7: Patient Journey Funnel -->
+      <div class="chart-panel mt-24">
+        <div class="panel-header-block">
+          <div class="panel-title-row">
+            <div class="panel-title"><span class="title-icon">🔽</span> مسار رحلة المريض — تتبع تجربة المنتفع خطوةً بخطوة</div>
+            <span class="panel-badge yellow">تحليل التجربة</span>
+          </div>
+          <p class="panel-desc">يتتبع هذا المخطط مستوى رضا المريض عبر مراحل رحلته كاملةً — من لحظة الحجز حتى انتهاء الزيارة. المرحلة التي يصغر فيها الشريط هي المرحلة التي يتدهور فيها الرضا، وتستوجب معالجة فورية.</p>
+          <div class="panel-insight insight-info" id="smartInsightJourney">
+            <span>💡</span><span>جارٍ تحليل البيانات...</span>
+          </div>
+        </div>
+        <div class="chart-body">
+          <div class="funnel-wrap" id="funnelWrap">
+            <p style="text-align:center;color:#94a3b8;padding:40px 0;">جارٍ تحميل البيانات...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 8: Location Bar + Scatter -->
+      <div class="grid-2 mt-24">
+        <div class="chart-panel">
+          <div class="panel-header-block">
+            <div class="panel-title-row">
+              <div class="panel-title"><span class="title-icon">📍</span> التوزيع الجغرافي للعينات</div>
+              <span class="panel-badge blue">التوزيع المكاني</span>
+            </div>
+            <p class="panel-desc">يوزع الاستبيانات على المناطق الجغرافية (المراكز والمدن). يساعد في الكشف عن المناطق التي تحظى بتغطية أقل وتحتاج إلى جهد ميداني إضافي.</p>
+          </div>
+          <div class="chart-body"><div class="chart-container"><canvas id="locationBarChart"></canvas></div></div>
+        </div>
+        <div class="chart-panel">
+          <div class="panel-header-block">
+            <div class="panel-title-row">
+              <div class="panel-title"><span class="title-icon">🔵</span> جودة المنشأة مقابل حجم عينتها</div>
+              <span class="panel-badge purple">تحليل ثنائي</span>
+            </div>
+            <p class="panel-desc">يعرض لكل منشأة نقطة: موقعها الأفقي يعكس عدد الاستبيانات، وموقعها العمودي يعكس نسبة الرضا. المنشآت في الزاوية العلوية اليمنى هي الأفضل أداءً وحجماً.</p>
+          </div>
+          <div class="chart-body"><div class="chart-container"><canvas id="facilityScatterChart"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- Row 9: Recent Surveys (compact) -->
+      <div class="chart-panel mt-24" style="max-width:560px; margin-right:0;">
+        <div class="panel-header-block">
+          <div class="panel-title"><span class="title-icon">🕐</span> آخر الاستبيانات المُسجَّلة</div>
+          <p class="panel-desc" style="margin-top:6px;">أحدث 10 استبيانات تم تسجيلها مع نسبة الرضا لكل منشأة.</p>
+        </div>
         <div class="table-responsive">
           <table class="data-table">
             <thead><tr><th>المنشأة</th><th>نسبة الرضا</th></tr></thead>
@@ -113,37 +283,91 @@
           </table>
         </div>
       </div>
+
     </section>
 
-    <!-- ═══ SECTION: Teams ═══ -->
+    <!-- ═══════════════════════════════════
+         SECTION: Teams
+         ═══════════════════════════════════ -->
     <section id="teams">
-      <div class="grid-2">
-        <div class="glass-panel"><div class="panel-header" style="font-size:1.2rem;">📊 أداء الفرق (العدد ونسبة الرضا)</div><div class="chart-container tall"><canvas id="teamMixedChart"></canvas></div></div>
-        <div class="glass-panel"><div class="panel-header" style="font-size:1.2rem;">🏆 أعلى 3 فرق</div><div id="top3Container" class="top3-grid"></div></div>
+
+      <div class="page-header">
+        <h1>👥 لوحة أداء الفرق الميدانية</h1>
       </div>
-      <div class="glass-panel mt-20">
-        <div class="panel-header" style="font-size:1.3rem; color:#facc15;">📋 التقرير الشامل لأداء الفرق</div>
+
+      <!-- Team Mixed Chart + Top 3 -->
+      <div class="grid-2">
+
+        <div class="chart-panel">
+          <div class="panel-header-block">
+            <div class="panel-title-row">
+              <div class="panel-title"><span class="title-icon">📊</span> الإنتاجية ونسبة الرضا لكل فريق</div>
+              <span class="panel-badge blue">مقارنة الفرق</span>
+            </div>
+            <p class="panel-desc">يجمع هذا المخطط في رسمة واحدة عدد الاستبيانات التي أنجزها كل فريق (الأعمدة الزرقاء) مع نسبة رضا المنتفعين التي رصدها ذلك الفريق (الخط الذهبي). الفريق المثالي هو من يجمع بين الكمية والجودة معاً.</p>
+            <div class="panel-insight insight-info" id="smartInsightTeam">
+              <span>💡</span><span>جارٍ تحليل البيانات...</span>
+            </div>
+          </div>
+          <div class="chart-body"><div class="chart-container tall"><canvas id="teamMixedChart"></canvas></div></div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="panel-header-block">
+            <div class="panel-title"><span class="title-icon">🏆</span> الفرق الثلاثة الأوائل</div>
+            <p class="panel-desc" style="margin-top:6px;">تُرتَّب الفرق تنازلياً حسب إجمالي عدد الاستبيانات المُنجزة.</p>
+          </div>
+          <div id="top3Container" class="top3-grid"></div>
+        </div>
+
+      </div>
+
+      <!-- Team Details Table -->
+      <div class="chart-panel mt-24">
+        <div class="panel-header-block">
+          <div class="panel-title"><span class="title-icon">📋</span> التقرير الشامل لأداء جميع الفرق</div>
+          <p class="panel-desc" style="margin-top:6px;">يعرض هذا التقرير بيانات كل فريق كاملةً: إجمالي الاستبيانات، ومتوسط نسبة رضا المنتفعين، وعدد المنشآت التي غطاها الفريق.</p>
+        </div>
         <div class="table-responsive">
           <table class="data-table" id="teamDetailsTable">
             <thead>
               <tr>
                 <th>اسم الفريق</th>
                 <th>إجمالي الاستبيانات</th>
-                <th>نسبة الرضا العامة %</th>
-                <th>المنشآت التي تم تغطيتها</th>
+                <th>متوسط نسبة الرضا</th>
+                <th>المنشآت المغطاة</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
-      <div class="glass-panel mt-20"><div class="panel-header" style="font-size:1.2rem;">👤 أداء الموظفين (الأفراد)</div><div class="chart-container tall"><canvas id="employeeBarChart"></canvas></div></div>
+
+      <!-- Employee Bubble Chart -->
+      <div class="chart-panel mt-24">
+        <div class="panel-header-block">
+          <div class="panel-title-row">
+            <div class="panel-title"><span class="title-icon">🫧</span> مخطط فقاعات أداء الموظفين</div>
+            <span class="panel-badge purple">تقييم الأفراد</span>
+          </div>
+          <p class="panel-desc">يُمثّل كل موظف فقاعةً: كلما كبُر حجم الفقاعة كلما زاد عدد الاستبيانات التي جمعها، وكلما ارتفعت موضعها كلما ارتفعت نسبة رضا المنتفعين الذين قابلهم. الفقاعات في أعلى يسار المخطط تمثل أعلى الموظفين أداءً.</p>
+          <div class="panel-insight insight-info" id="smartInsightBubble">
+            <span>💡</span><span>جارٍ تحليل البيانات...</span>
+          </div>
+        </div>
+        <div class="chart-body"><div class="chart-container tall"><canvas id="employeeBubbleChart"></canvas></div></div>
+      </div>
+
     </section>
-  </div>
+
+  </div><!-- /content-sections -->
+</div><!-- /dash-wrap -->
+
+<div class="full-loading" id="fullLoading">
+  <div class="spinner"></div>
+  <p>جارٍ تحميل بيانات الأداء...</p>
 </div>
 
-<div class="full-loading" id="fullLoading"><div class="spinner"></div></div>
-
-<script src="surveys.js?v=6"></script>
+<script src="surveys.js?v=7"></script>
 </body>
 </html>
