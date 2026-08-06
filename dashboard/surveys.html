@@ -45,30 +45,43 @@
 
       <!-- KPIs -->
       <div class="kpi-grid">
-        <div class="kpi-card glass-card info" data-tooltip="يمثل العدد الإجمالي لكل الاستبيانات التي تم جمعها بنجاح حتى الآن.">
-          <div class="kpi-title">إجمالي الاستبيانات المُنجزة</div>
-          <div class="kpi-val" id="kpiSurveyTotal">—</div>
-          <canvas class="kpi-sparkline" id="sparkTotal"></canvas>
-          <div class="kpi-icon">📋</div>
+        
+        <div class="kpi-wrapper" data-tooltip="يمثل العدد الإجمالي لكل الاستبيانات التي تم جمعها بنجاح حتى الآن.">
+          <div class="kpi-card glass-card info">
+            <div class="kpi-title">إجمالي الاستبيانات المُنجزة</div>
+            <div class="kpi-val" id="kpiSurveyTotal">—</div>
+            <canvas class="kpi-sparkline" id="sparkTotal"></canvas>
+            <div class="kpi-icon">📋</div>
+          </div>
         </div>
-        <div class="kpi-card glass-card success" data-tooltip="هو المتوسط العام لرضا المرضى عبر جميع الأقسام والمستشفيات، ويُحسب من إجابات أسئلة التقييم.">
-          <div class="kpi-title">متوسط نسبة رضا المنتفعين</div>
-          <div class="kpi-val" id="kpiSatisfaction">—</div>
-          <div class="kpi-trend" id="kpiSatTrend" style="color:#34d399"></div>
-          <div class="kpi-icon">⭐</div>
+
+        <div class="kpi-wrapper" data-tooltip="هو المتوسط العام لرضا المرضى عبر جميع الأقسام والمستشفيات، ويُحسب من إجابات أسئلة التقييم.">
+          <div class="kpi-card glass-card success">
+            <div class="kpi-title">متوسط نسبة رضا المنتفعين</div>
+            <div class="kpi-val" id="kpiSatisfaction">—</div>
+            <div class="kpi-trend" id="kpiSatTrend" style="color:#34d399"></div>
+            <div class="kpi-icon">⭐</div>
+          </div>
         </div>
-        <div class="kpi-card glass-card warning" data-tooltip="مؤشر يطرح نسبة غير الراضين من نسبة الراضين. الرقم الموجب يعني أن الراضين أكثر، والرقم السالب يعني أن غير الراضين أكثر.">
-          <div class="kpi-title">مؤشر التوصية (NPS)</div>
-          <div class="kpi-val" id="kpiNPS">—</div>
-          <div style="font-size:0.75rem;color:#94a3b8;margin-top:6px;">نسبة مَن يوصون بالخدمة</div>
-          <div class="kpi-icon">👍</div>
+
+        <div class="kpi-wrapper" data-tooltip="مؤشر يطرح نسبة غير الراضين من نسبة الراضين. الرقم الموجب يعني أن الراضين أكثر، والرقم السالب يعني أن غير الراضين أكثر.">
+          <div class="kpi-card glass-card warning">
+            <div class="kpi-title">مؤشر التوصية (NPS)</div>
+            <div class="kpi-val" id="kpiNPS">—</div>
+            <div style="font-size:0.75rem;color:#94a3b8;margin-top:6px;">نسبة مَن يوصون بالخدمة</div>
+            <div class="kpi-icon">👍</div>
+          </div>
         </div>
-        <div class="kpi-card glass-card purple" data-tooltip="عدد المستشفيات والمراكز التي تم إجراء استبيانات فيها.">
-          <div class="kpi-title">المنشآت الصحية المغطاة</div>
-          <div class="kpi-val" id="kpiCovered">—</div>
-          <div style="font-size:0.75rem;color:#94a3b8;margin-top:6px;">من إجمالي المنشآت المسجلة</div>
-          <div class="kpi-icon">🏥</div>
+
+        <div class="kpi-wrapper" data-tooltip="عدد المستشفيات والمراكز التي تم إجراء استبيانات فيها.">
+          <div class="kpi-card glass-card purple">
+            <div class="kpi-title">المنشآت الصحية المغطاة</div>
+            <div class="kpi-val" id="kpiCovered">—</div>
+            <div style="font-size:0.75rem;color:#94a3b8;margin-top:6px;">من إجمالي المنشآت المسجلة</div>
+            <div class="kpi-icon">🏥</div>
+          </div>
         </div>
+
       </div>
 
       <!-- Row 1: Sector Pie + Category Donut -->
@@ -371,7 +384,7 @@
           </li>
           <li>
             <span class="note-icon">👨‍⚕️</span>
-            <span class="note-text">إشادة كبيرة بحسن تعامل الأطباء وطاقم التمريض واهتمامهم بالمرضى.</span>
+            <span class="note-text">الخدمة الطبية ممتازة ولكن نتمنى توفير طبيب أسنان أو عيادة رمد في الفترة المسائية.</span>
           </li>
           <li>
             <span class="note-icon">🌡️</span>
@@ -382,8 +395,8 @@
             <span class="note-text">طول مدة الانتظار قبل الدخول للطبيب أو في قسم التسجيل.</span>
           </li>
           <li>
-            <span class="note-icon">🧹</span>
-            <span class="note-text">مستوى النظافة العام في المنشآت والغرف لاقى استحساناً من معظم المنتفعين.</span>
+            <span class="note-icon">📄</span>
+            <span class="note-text">تأخير في استخراج خطابات الإحالة وقرارات العلاج، ونرجو تسريع الإجراءات الإدارية.</span>
           </li>
           <li>
             <span class="note-icon">💊</span>
