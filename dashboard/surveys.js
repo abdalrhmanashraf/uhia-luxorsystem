@@ -211,28 +211,40 @@ function renderTrend(s) {
   }
 }
 
-// ── 4. Facility Rank ──
+// ── 4. Facility Rank (مستشفيات فقط) ──
 function renderFacilityRank(s) {
-  var fRank = (s.facilityRanking||[]).slice(0,14);
+  // فلترة المستشفيات فقط
+  var fRank = (s.facilityRanking||[]).filter(function(f){
+    return f.label && f.label.indexOf('مستشفى') !== -1;
+  }).slice(0,14);
   var L = fRank.map(function(f){return f.label;});
   var V = fRank.map(function(f){return f.satisfaction;});
   var C = V.map(function(v){return v>=70?'rgba(16,185,129,0.85)':v>=50?'rgba(245,158,11,0.85)':'rgba(239,68,68,0.85)';});
   destroyChart('facRank');
+  // حساب الارتفاع بناءً على عدد المستشفيات
+  var chartH = Math.max(350, fRank.length * 52);
+  document.getElementById('facilityRankChart').parentElement.style.height = chartH + 'px';
   charts.facRank = new Chart(document.getElementById('facilityRankChart').getContext('2d'), {
     type: 'bar',
     data: { labels: L, datasets: [{ label: 'نسبة الرضا %', data: V, backgroundColor: C, borderRadius: 8, borderWidth: 0 }] },
-    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { max: 100, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { grid: { display: false }, ticks: { font: { size: 11 } } } }, plugins: { legend: { display: false } } }
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { max: 100, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { grid: { display: false }, ticks: { font: { size: 12, weight: 'bold' } } } }, plugins: { legend: { display: false } } }
   });
-  var low = fRank.reduce(function(a,b){return a.satisfaction<b.satisfaction?a:b;},{label:'—',satisfaction:100});
-  var type = low.satisfaction < 50 ? 'danger' : low.satisfaction < 70 ? 'warn' : 'good';
-  setInsight('smartInsightFac', '"' + low.label + '" تُسجّل أدنى نسبة رضا بـ ' + low.satisfaction + '% — وتحتاج متابعة مباشرة.', type);
+  if(fRank.length) {
+    var low = fRank.reduce(function(a,b){return a.satisfaction<b.satisfaction?a:b;});
+    var type = low.satisfaction < 50 ? 'danger' : low.satisfaction < 70 ? 'warn' : 'good';
+    setInsight('smartInsightFac', '"' + low.label + '" تُسجّل أدنى نسبة رضا بـ ' + low.satisfaction + '% — وتحتاج متابعة مباشرة.', type);
+  }
 }
 
-// ── 5. Question Stacked ──
+// ── 5. Question Stacked (نص كامل) ──
 function renderQuestionStacked(s) {
   var Qs = (s.questionAnalysis||[]).filter(function(q){return q.satisfied_very>0||q.satisfied>0||q.unsatisfied>0;});
-  var L = Qs.map(function(q){var t=q.text;return t.length>40?t.substr(0,40)+'…':t;});
+  // إظهار النص كاملاً بدون قطع
+  var L = Qs.map(function(q){return q.text;});
   destroyChart('questionStacked');
+  // ضبط الارتفاع بناءً على عدد الأسئلة
+  var chartH = Math.max(400, Qs.length * 65);
+  document.getElementById('questionStackedChart').parentElement.style.height = chartH + 'px';
   charts.questionStacked = new Chart(document.getElementById('questionStackedChart'), {
     type: 'bar',
     data: { labels: L, datasets: [
@@ -240,11 +252,18 @@ function renderQuestionStacked(s) {
       { label: 'راضٍ',     data: Qs.map(function(q){return q.satisfied;}),      backgroundColor: 'rgba(245,158,11,0.85)' },
       { label: 'غير راضٍ', data: Qs.map(function(q){return q.unsatisfied;}),   backgroundColor: 'rgba(239,68,68,0.85)', borderRadius: 4 }
     ]},
-    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } } }, plugins: { legend: { position: 'top' } } }
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      scales: {
+        x: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 }, autoSkip: false, maxRotation: 0 } }
+      },
+      plugins: { legend: { position: 'top' }, tooltip: { callbacks: { title: function(items){ return items[0].label; } } } }
+    }
   });
   if (Qs.length) {
     var worst = Qs.reduce(function(a,b){return a.unsatisfied>b.unsatisfied?a:b;});
-    setInsight('smartInsightQ', 'السؤال المتعلق بـ "' + worst.text.substr(0,45) + '..." يسجّل أعلى نسبة عدم رضا.', 'warn');
+    setInsight('smartInsightQ', 'السؤال المتعلق بـ "' + worst.text + '" يسجّل أعلى نسبة عدم رضا.', 'warn');
   }
 }
 
@@ -281,10 +300,13 @@ function renderRadar(s) {
   setInsight('smartInsightRadar', 'محور "' + minAx + '" يُسجّل أدنى قيمة في الشبكة بنسبة ' + min + '% — وهو يستحق الأولوية في التحسين.', type);
 }
 
-// ── 7. Heatmap ──
+// ── 7. Heatmap (مستشفيات فقط) ──
 function renderHeatmap(s) {
   var axes = RADAR_AXES;
-  var facs = (s.facilityRanking||[]).slice(0,10);
+  // فلترة المستشفيات فقط
+  var facs = (s.facilityRanking||[]).filter(function(f){
+    return f.label && f.label.indexOf('مستشفى') !== -1;
+  }).slice(0,10);
   if (!facs.length) return;
 
   var qMap = {};
@@ -414,11 +436,14 @@ function renderScatter(s) {
   });
 }
 
-// ── 13. Recent Surveys ──
+// ── 13. Recent Surveys (مستشفيات فقط) ──
 function renderRecentSurveys(s) {
   var tb=document.getElementById('recentSurveysBody');
-  var rows=s.recentSurveys||[];
-  if(!rows.length){tb.innerHTML='<tr><td colspan="2" style="text-align:center;padding:20px;color:#94a3b8;">لا توجد بيانات</td></tr>';return;}
+  // فلترة المستشفيات فقط
+  var rows=(s.recentSurveys||[]).filter(function(r){
+    return r.facility && r.facility.indexOf('مستشفى') !== -1;
+  });
+  if(!rows.length){tb.innerHTML='<tr><td colspan="2" style="text-align:center;padding:20px;color:#94a3b8;">لا توجد بيانات لمستشفيات</td></tr>';return;}
   var h='';
   rows.forEach(function(r){
     var col=r.satisfaction>=70?'#34d399':r.satisfaction>=50?'#fbbf24':'#f87171';
@@ -458,8 +483,10 @@ function renderTop3(s) {
   if(!top3.length){c.innerHTML='<p style="padding:40px;text-align:center;color:#94a3b8;">لا توجد بيانات</p>';return;}
   var em=['🥇','🥈','🥉'],cl=['gold','silver','bronze'];
   c.innerHTML=top3.map(function(t,i){
+    // إضافة "فريق أ" قبل اسم الفريق
+    var displayName = 'فريق أ ' + t.name;
     return '<div class="medal-card '+cl[i]+'"><span class="medal-emoji">'+em[i]+'</span>'+
-      '<div class="medal-name">'+t.name+'</div>'+
+      '<div class="medal-name">'+displayName+'</div>'+
       '<div class="medal-count">'+t.count+'</div>'+
       '<div class="medal-label">استبيان • '+t.satisfaction+'% رضا</div></div>';
   }).join('');
@@ -474,11 +501,13 @@ function renderTeamTable(s) {
   tb.innerHTML=stats.map(function(t){
     var col=t.satisfaction>=70?'#34d399':t.satisfaction>=50?'#fbbf24':'#f87171';
     var fac=Object.keys(t.facilities||{}).length;
+    // إضافة "فريق أ" قبل اسم الفريق
+    var displayName = 'فريق أ ' + t.name;
     return '<tr>'+
-      '<td><strong style="font-size:1rem;">'+t.name+'</strong></td>'+
+      '<td><strong style="font-size:1rem;">'+displayName+'</strong></td>'+
       '<td><span style="background:rgba(59,130,246,0.18);color:#93c5fd;border:1px solid rgba(59,130,246,0.4);padding:5px 14px;border-radius:20px;font-weight:800;">'+t.count+'</span></td>'+
       '<td><strong style="color:'+col+';font-size:1.25rem;text-shadow:0 0 12px '+col+'50;">'+t.satisfaction+'%</strong></td>'+
-      '<td style="color:#94a3b8;">'+fac+' منشآت</td>'+
+      '<td style="color:#94a3b8;">'+fac+' منشأة</td>'+
       '</tr>';
   }).join('');
 }

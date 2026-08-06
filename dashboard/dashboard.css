@@ -174,6 +174,52 @@ body {
 .kpi-card.purple  { border-color: rgba(139,92,246,0.3); }
 .kpi-card.purple  .kpi-val { color: #a78bfa; text-shadow: 0 0 25px var(--purple-glow); }
 
+/* ── Tooltip System ── */
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+[data-tooltip]::before,
+[data-tooltip]::after {
+  position: absolute;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  pointer-events: none;
+}
+[data-tooltip]::before {
+  content: attr(data-tooltip);
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+[data-tooltip]::after {
+  content: '';
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  border: 6px solid transparent;
+  border-top-color: rgba(15, 23, 42, 0.95);
+  margin-bottom: -11px;
+}
+[data-tooltip]:hover::before,
+[data-tooltip]:hover::after {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* ── Chart Panel (with description) ── */
 .chart-panel {
   background: var(--bg-panel);
@@ -318,11 +364,61 @@ body {
   padding: 14px 16px; color: var(--text-muted); font-size: 0.88rem; font-weight: 800;
   border-bottom: 2px solid rgba(255,255,255,0.08); letter-spacing: 0.3px;
 }
-.data-table td {
-  padding: 15px 16px; border-bottom: 1px solid rgba(255,255,255,0.04);
-  font-size: 0.9rem; font-weight: 600;
+.data-table tbody td { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #e2e8f0; font-size: 0.95rem; font-weight: 600; white-space: nowrap; }
+.data-table tbody tr:hover { background: rgba(59,130,246,0.05); }
+
+/* ── Notes Summary Box ── */
+.notes-summary-panel {
+  background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.9));
+  border: 1px solid rgba(139,92,246,0.4);
+  border-radius: 20px;
+  padding: 35px 40px;
+  margin-top: 40px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
 }
-.data-table tr:hover td { background: rgba(255,255,255,0.03); }
+.notes-summary-panel::before {
+  content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px;
+  background: radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
+}
+.notes-summary-header {
+  display: flex; align-items: center; gap: 15px; margin-bottom: 25px;
+}
+.notes-summary-icon {
+  font-size: 2.2rem; filter: drop-shadow(0 0 15px rgba(139,92,246,0.6));
+}
+.notes-summary-title {
+  font-size: 1.5rem; font-weight: 800;
+  background: linear-gradient(135deg, #e2e8f0, #a78bfa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.notes-list {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;
+}
+.notes-list li {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 18px 22px;
+  border-radius: 12px;
+  display: flex; align-items: flex-start; gap: 12px;
+  transition: all 0.3s ease;
+}
+.notes-list li:hover {
+  background: rgba(139,92,246,0.08);
+  border-color: rgba(139,92,246,0.3);
+  transform: translateY(-2px);
+}
+.notes-list li .note-icon {
+  font-size: 1.2rem; margin-top: 2px;
+}
+.notes-list li .note-text {
+  font-size: 0.95rem; color: #cbd5e1; line-height: 1.6; font-weight: 500;
+}
+
+/* ── Badge ── */
 .badge { padding: 5px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 800; display: inline-block; }
 .badge-danger { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.35); }
 
