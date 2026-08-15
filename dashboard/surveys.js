@@ -78,6 +78,7 @@ window.addEventListener('load', function() {
   Chart.defaults.font.family = "'Cairo', sans-serif";
   Chart.defaults.font.size = 12;
   updateClock(); setInterval(updateClock, 1000);
+  initNotesSection();
   loadData();
 });
 
@@ -125,7 +126,6 @@ function renderAll(s) {
   renderKPIs(s);
   renderSectorPie(s);
   renderCategoryDonut(s);
-  renderTrend(s);
   renderFacilityRank(s);
   renderQuestionStacked(s);
   renderRadar(s);
@@ -194,22 +194,6 @@ function renderCategoryDonut(s) {
   if (L.length) setInsight('smartInsightCat', '"' + L[0] + '" يستأثر بأعلى عدد من الاستبيانات بين أنواع المنشآت.', 'info');
 }
 
-// ── 3. Trend Line ──
-function renderTrend(s) {
-  var K = Object.keys(s.dailyTrend || {}).sort();
-  var V = K.map(function(k){return s.dailyTrend[k];});
-  destroyChart('surveyTrend');
-  var ctx = document.getElementById('surveyTrendChart').getContext('2d');
-  charts.surveyTrend = new Chart(ctx, {
-    type: 'line',
-    data: { labels: K, datasets: [{ label: 'استبيانات يومية', data: V, borderColor: '#8b5cf6', backgroundColor: getGrad(ctx,'rgba(139,92,246,0.35)','rgba(139,92,246,0)'), fill: true, tension: 0.45, borderWidth: 3, pointRadius: 4, pointHoverRadius: 8, pointBackgroundColor: '#8b5cf6' }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' } }, y: { grid: { color: 'rgba(255,255,255,0.04)' } } } }
-  });
-  if (V.length) {
-    var mx = Math.max.apply(null,V), mxD = K[V.indexOf(mx)];
-    setInsight('smartInsightTrend', 'بلغ النشاط ذروته في ' + mxD + ' بتسجيل ' + mx + ' استبيانات في يوم واحد.', 'good');
-  }
-}
 
 // ── 4. Facility Rank (مستشفيات فقط) ──
 function renderFacilityRank(s) {
@@ -563,3 +547,224 @@ function setInsight(id, text, type) {
   el.className='panel-insight '+cls;
   el.innerHTML='<span>'+icon+'</span><span>'+text+'</span>';
 }
+
+// ═══════════════════════════════════════════════
+// NOTES & OBSERVATIONS SECTION LOGIC
+// ═══════════════════════════════════════════════
+
+var currentFacTypeFilter = 'all';
+var currentCatFilter = 'all';
+
+function initNotesSection() {
+  var data = window.FACILITY_NOTES_DATA || [];
+  if (!data.length) return;
+
+  // Populate facility select
+  var sel = document.getElementById('notesFacilitySelect');
+  if (sel) {
+    var opts = '<option value="all">🏥 عرض جميع المنشآت (' + data.length + ' منشأة)</option>';
+    data.forEach(function(f) {
+      opts += '<option value="' + f.name + '">' + f.name + ' (' + f.total_notes + ' ملاحظة)</option>';
+    });
+    sel.innerHTML = opts;
+  }
+
+  // Update KPI counters
+  var totalNotes = data.reduce(function(acc, f) { return acc + f.total_notes; }, 0);
+  var statNotes = document.getElementById('statTotalNotes');
+  var statFacs = document.getElementById('statTotalFacs');
+  if (statNotes) statNotes.innerText = totalNotes + '+';
+  if (statFacs) statFacs.innerText = data.length;
+
+  renderFacilityNotesCards();
+}
+
+function setFacTypeFilter(type, btn) {
+  currentFacTypeFilter = type;
+  if (btn) {
+    btn.parentElement.querySelectorAll('button').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+  }
+  renderFacilityNotesCards();
+}
+
+function setCatFilter(cat, btn) {
+  currentCatFilter = cat;
+  if (btn) {
+    btn.parentElement.querySelectorAll('button').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+  }
+  renderFacilityNotesCards();
+}
+
+function onFacilityDropdownChange() {
+  var sel = document.getElementById('notesFacilitySelect');
+  var val = sel ? sel.value : 'all';
+  renderFacilityNotesCards();
+  if (val !== 'all') {
+    var targetCard = document.getElementById('fac-card-' + encodeURIComponent(val));
+    if (targetCard) {
+      targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+}
+
+function filterNotesCards() {
+  renderFacilityNotesCards();
+}
+
+function renderFacilityNotesCards() {
+  var container = document.getElementById('facilityNotesCardsContainer');
+  if (!container) return;
+
+  var data = window.FACILITY_NOTES_DATA || [];
+  var searchInput = document.getElementById('notesSearchInput');
+  var query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  var selFac = document.getElementById('notesFacilitySelect');
+  var selectedFacName = selFac ? selFac.value : 'all';
+
+  var filtered = data.filter(function(fac) {
+    // Facility Select
+    if (selectedFacName !== 'all' && fac.name !== selectedFacName) return false;
+
+    // Type Filter
+    if (currentFacTypeFilter === 'hospital' && fac.name.indexOf('مستشفى') === -1) return false;
+    if (currentFacTypeFilter === 'center_unit' && fac.name.indexOf('مستشفى') !== -1) return false;
+
+    // Category Filter
+    if (currentCatFilter !== 'all') {
+      var hasCat = fac.highlights.some(function(h) {
+        if (currentCatFilter === 'meds' && (h.category.indexOf('أدوية') !== -1 || h.title.indexOf('علاج') !== -1)) return true;
+        if (currentCatFilter === 'waiting' && (h.category.indexOf('انتظار') !== -1 || h.category.indexOf('مواعيد') !== -1)) return true;
+        if (currentCatFilter === 'diagnostics' && (h.category.indexOf('أشعة') !== -1 || h.category.indexOf('معامل') !== -1 || h.category.indexOf('فحوصات') !== -1)) return true;
+        if (currentCatFilter === 'security' && (h.category.indexOf('أمن') !== -1 || h.category.indexOf('تعامل') !== -1)) return true;
+        if (currentCatFilter === 'referrals' && (h.category.indexOf('إحالة') !== -1 || h.category.indexOf('تحويل') !== -1)) return true;
+        if (currentCatFilter === 'praise' && (h.category.indexOf('إشاد') !== -1 || h.category.indexOf('تميز') !== -1)) return true;
+        return false;
+      });
+      if (!hasCat) return false;
+    }
+
+    // Search Query
+    if (query) {
+      var matchName = fac.name.toLowerCase().indexOf(query) !== -1;
+      var matchSummary = fac.summary.toLowerCase().indexOf(query) !== -1;
+      var matchHighlights = fac.highlights.some(function(h) {
+        return h.title.toLowerCase().indexOf(query) !== -1 || h.text.toLowerCase().indexOf(query) !== -1 || h.category.toLowerCase().indexOf(query) !== -1;
+      });
+      var matchRaw = fac.raw_notes.some(function(r) {
+        return r.text.toLowerCase().indexOf(query) !== -1;
+      });
+      if (!matchName && !matchSummary && !matchHighlights && !matchRaw) return false;
+    }
+
+    return true;
+  });
+
+  if (!filtered.length) {
+    container.innerHTML = '<div style="text-align:center;padding:50px 20px;background:rgba(15,23,42,0.6);border-radius:16px;border:1px solid rgba(255,255,255,0.08);"><div style="font-size:3rem;margin-bottom:12px;">🔍</div><h3 style="color:#f8fafc;font-size:1.2rem;margin-bottom:6px;">لا توجد منشآت مطابقة لمعايير البحث الحالية</h3><p style="color:#94a3b8;font-size:0.9rem;">جرب كتابة كلمات بحث أخرى أو إزالة بعض الفلاتر.</p></div>';
+    return;
+  }
+
+  var html = '';
+  filtered.forEach(function(fac, idx) {
+    var isHosp = fac.name.indexOf('مستشفى') !== -1;
+    var facIcon = isHosp ? '🏥' : (fac.name.indexOf('مركز') !== -1 ? '🏢' : '🩺');
+    var encodedId = 'fac-card-' + encodeURIComponent(fac.name);
+    var drawerId = 'raw-drawer-' + idx;
+    var btnId = 'raw-btn-' + idx;
+
+    // Badges HTML
+    var badgesHtml = (fac.badges || []).map(function(b) {
+      return '<span class="badge" style="background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);font-size:0.75rem;">' + b + '</span>';
+    }).join(' ');
+
+    // Highlights HTML
+    var highlightsHtml = (fac.highlights || []).map(function(h) {
+      var sevClass = h.severity === 'high' ? 'sev-high' : (h.severity === 'positive' ? 'sev-positive' : 'sev-medium');
+      var sevBadge = h.severity === 'high' ? '<span style="color:#fca5a5;font-size:0.72rem;font-weight:800;background:rgba(239,68,68,0.2);padding:2px 8px;border-radius:10px;">🚨 حرج</span>' : (h.severity === 'positive' ? '<span style="color:#6ee7b7;font-size:0.72rem;font-weight:800;background:rgba(16,185,129,0.2);padding:2px 8px;border-radius:10px;">⭐ إيجابي</span>' : '<span style="color:#fde68a;font-size:0.72rem;font-weight:800;background:rgba(245,158,11,0.2);padding:2px 8px;border-radius:10px;">⚠️ متوسط</span>');
+
+      return '<div class="highlight-card ' + sevClass + '">' +
+        '<div class="highlight-head">' +
+          '<div class="highlight-cat"><span>' + h.icon + '</span><span>' + h.category + '</span></div>' +
+          sevBadge +
+        '</div>' +
+        '<div class="highlight-title">' + h.title + '</div>' +
+        '<p class="highlight-text">' + h.text + '</p>' +
+      '</div>';
+    }).join('');
+
+    // Raw Notes HTML
+    var rawBubbles = (fac.raw_notes || []).map(function(r) {
+      return '<div class="raw-note-bubble">' +
+        '<div class="raw-cat-tag"><span>' + r.icon + '</span> ' + r.category + '</div>' +
+        '<div style="color:#f1f5f9;font-weight:500;">« ' + r.text + ' »</div>' +
+      '</div>';
+    }).join('');
+
+    html += '<div class="facility-card-item" id="' + encodedId + '">' +
+      '<div class="facility-card-top">' +
+        '<div class="fac-title-group">' +
+          '<div class="fac-avatar">' + facIcon + '</div>' +
+          '<div>' +
+            '<h2 class="fac-name">' + fac.name + '</h2>' +
+            '<div class="fac-meta">' +
+              '<span>' + fac.type + '</span>' +
+              '<span>•</span>' +
+              '<span>القطاع ' + fac.sector + '</span>' +
+              '<span>•</span>' +
+              '<span>' + fac.surveys + ' استبيان</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="fac-badge-group">' +
+          badgesHtml +
+          '<span class="badge-notes-count">📝 ' + fac.total_notes + ' ملاحظة مسجلة</span>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="facility-summary-box">' +
+        '<strong>💡 الخلاصة التنفيذية: </strong>' + fac.summary +
+      '</div>' +
+
+      '<div class="highlights-grid">' +
+        highlightsHtml +
+      '</div>' +
+
+      '<div style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">' +
+        '<button class="raw-toggle-btn" id="' + btnId + '" onclick="toggleRawNotes(\'' + btnId + '\', \'' + drawerId + '\')">' +
+          '<span>👁️ عرض الملاحظات الأصلية للمنتفعين (' + fac.raw_notes.length + ')</span>' +
+          '<span style="font-size:0.75rem;">▼</span>' +
+        '</button>' +
+        '<span style="font-size:0.78rem;color:#64748b;">مصدر البيانات: استبيانات الرضا UHIA الفرعية</span>' +
+      '</div>' +
+
+      '<div class="raw-notes-drawer" id="' + drawerId + '">' +
+        '<div style="margin-bottom:12px;font-size:0.85rem;color:#93c5fd;font-weight:700;">سجل نصوص الشكاوى والملاحظات الأصلية كما وردت من المرضى:</div>' +
+        '<div class="raw-notes-grid">' +
+          rawBubbles +
+        '</div>' +
+      '</div>' +
+
+    '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function toggleRawNotes(btnId, drawerId) {
+  var drawer = document.getElementById(drawerId);
+  var btn = document.getElementById(btnId);
+  if (!drawer || !btn) return;
+  var isOpen = drawer.classList.contains('open');
+  if (isOpen) {
+    drawer.classList.remove('open');
+    btn.querySelector('span:first-child').innerText = btn.querySelector('span:first-child').innerText.replace('إخفاء', 'عرض');
+    btn.querySelector('span:last-child').innerText = '▼';
+  } else {
+    drawer.classList.add('open');
+    btn.querySelector('span:first-child').innerText = btn.querySelector('span:first-child').innerText.replace('عرض', 'إخفاء');
+    btn.querySelector('span:last-child').innerText = '▲';
+  }
+}
+

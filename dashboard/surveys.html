@@ -8,7 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="../config.js?v=7"></script>
-<link rel="stylesheet" href="dashboard.css?v=7">
+<script src="notes_data.js?v=5"></script>
+<link rel="stylesheet" href="dashboard.css?v=8">
 </head>
 <body>
 
@@ -23,6 +24,7 @@
     <div class="nav-tabs">
       <a href="#" class="active" onclick="switchSection('surveys',this)">📊 مؤشرات الاستبيانات</a>
       <a href="#" onclick="switchSection('teams',this)">👥 أداء الفرق</a>
+      <a href="#" onclick="switchSection('notes',this)">📝 ملاحظات ومقترحات المنشآت</a>
     </div>
     <div class="time-widget">
       <h3 id="clockTime">--:--:--</h3>
@@ -117,20 +119,7 @@
 
       </div>
 
-      <!-- Row 2: Trend Line -->
-      <div class="chart-panel mt-24">
-        <div class="panel-header-block">
-          <div class="panel-title-row">
-            <div class="panel-title"><span class="title-icon">📈</span> المسار الزمني اليومي للاستبيانات</div>
-            <span class="panel-badge green">النشاط الميداني</span>
-          </div>
-          <p class="panel-desc">يتتبع هذا المخطط حركة العمل الميداني يوماً بيوم، ويُظهر الأيام التي بلغ فيها النشاط ذروته. تتيح القراءة اليومية رصد أي انقطاع أو توقف غير مبرر في جمع البيانات.</p>
-          <div class="panel-insight insight-info" id="smartInsightTrend">
-            <span>💡</span><span>جارٍ تحليل البيانات...</span>
-          </div>
-        </div>
-        <div class="chart-body"><div class="chart-container"><canvas id="surveyTrendChart"></canvas></div></div>
-      </div>
+
 
       <!-- Row 3: Facility Rank + Question Analysis -->
       <div class="grid-2 mt-24">
@@ -404,6 +393,136 @@
           </li>
         </ul>
       </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════
+         SECTION: Notes & Qualitative Insights
+         ═══════════════════════════════════ -->
+    <section id="notes">
+
+      <div class="page-header" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h1>📝 سجل ومصفوفة ملاحظات ومقترحات المنتفعين</h1>
+            <p style="color:#94a3b8;font-size:0.9rem;margin-top:4px;">تحليل نوعي شامل واستخراج لكافة الشكاوى والمقترحات الميدانية من شيت الاستبيانات (UHIA-LuxorSystem 5)</p>
+          </div>
+          <span class="notes-header-badge">📊 تم الفرز والتصنيف من 7,506 استبيان</span>
+        </div>
+      </div>
+
+      <!-- Notes KPIs -->
+      <div class="notes-kpi-grid">
+        <div class="notes-kpi-item">
+          <div>
+            <div class="notes-kpi-title">إجمالي الملاحظات المرصودة</div>
+            <div class="notes-kpi-num" style="color:#f59e0b;" id="statTotalNotes">518+</div>
+          </div>
+          <div class="notes-kpi-icon">📝</div>
+        </div>
+
+        <div class="notes-kpi-item">
+          <div>
+            <div class="notes-kpi-title">المنشآت ذات الملاحظات النشطة</div>
+            <div class="notes-kpi-num" style="color:#3b82f6;" id="statTotalFacs">14</div>
+          </div>
+          <div class="notes-kpi-icon">🏥</div>
+        </div>
+
+        <div class="notes-kpi-item">
+          <div>
+            <div class="notes-kpi-title">المستشفيات التخصصية الكبرى</div>
+            <div class="notes-kpi-num" style="color:#ec4899;">6</div>
+          </div>
+          <div class="notes-kpi-icon">🏢</div>
+        </div>
+
+        <div class="notes-kpi-item">
+          <div>
+            <div class="notes-kpi-title">مراكز ووحدات طب الأسرة</div>
+            <div class="notes-kpi-num" style="color:#10b981;">8</div>
+          </div>
+          <div class="notes-kpi-icon">🩺</div>
+        </div>
+      </div>
+
+      <!-- Priority Action Matrix -->
+      <div class="panel-header-block" style="margin-bottom:14px;">
+        <div class="panel-title-row">
+          <div class="panel-title"><span class="title-icon">🚨</span> مصفوفة التدخلات العاجلة والتوصيات الاستراتيجية</div>
+          <span class="panel-badge red">أولويات التحسين</span>
+        </div>
+        <p class="panel-desc">أبرز المحاور المشتركة التي تكررت في ملاحظات المنتفعين وتتطلب تدخلاً عاجلاً من الإدارة لتطوير جودة الخدمة.</p>
+      </div>
+
+      <div class="priority-matrix">
+        <div class="priority-card danger">
+          <div class="priority-icon">🔬</div>
+          <div>
+            <div class="priority-title" style="color:#fca5a5;">استقرار أجهزة الأشعة والرنين</div>
+            <div class="priority-desc">صيانة عاجلة لأجهزة الرنين المغناطيسي والسونار في مستشفيات حورس والأقصر الدولي لتفادي تأجيل مواعيد الفحص لأسابيع.</div>
+          </div>
+        </div>
+
+        <div class="priority-card warning">
+          <div class="priority-icon">💊</div>
+          <div>
+            <div class="priority-title" style="color:#fde68a;">تأمين الأدوية المزمنة والأنسولين</div>
+            <div class="priority-desc">انتظام توريد أدوية السكر (ديمكرون) والضغط والقلب في صيدليات طيبة وحورس والأقالتة لتفادي شراء المرضى من الخارج.</div>
+          </div>
+        </div>
+
+        <div class="priority-card info">
+          <div class="priority-icon">🏥</div>
+          <div>
+            <div class="priority-title" style="color:#93c5fd;">تخفيف الضغط الاستيعابي بإسنا</div>
+            <div class="priority-desc">دراسة التوسع في منافذ تقديم الخدمة بمركز إسنا وتوفير استشاريين في أمراض الدم والرمد لتخفيف عبء السفر على الأهالي.</div>
+          </div>
+        </div>
+
+        <div class="priority-card success">
+          <div class="priority-icon">🛡️</div>
+          <div>
+            <div class="priority-title" style="color:#6ee7b7;">تطوير مهارات طواقم الأمن والفرز</div>
+            <div class="priority-desc">برامج تدريبية لأفراد الأمن وموظفي الاستقبال على التواصل الإنساني وتنظيم أوقات الدخول ومراعاة كبار السن.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter and Search Bar -->
+      <div class="notes-filter-wrapper">
+        <div class="filter-row-top">
+          <div class="notes-search-box">
+            <span class="notes-search-icon">🔍</span>
+            <input type="text" id="notesSearchInput" placeholder="ابحث في الملاحظات، المستشفيات، الأدوية، الأشعة، أو أسماء المنشآت..." oninput="filterNotesCards()">
+          </div>
+
+          <div style="min-width:220px;">
+            <select id="notesFacilitySelect" class="form-select" style="width:100%;padding:11px 16px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#fff;font-family:'Cairo',sans-serif;font-size:0.9rem;outline:none;" onchange="onFacilityDropdownChange()">
+              <option value="all">🏥 عرض جميع المنشآت (14 منشأة)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-pills-row">
+          <span style="font-size:0.82rem;color:#94a3b8;font-weight:700;margin-left:6px;">نوع المنشأة:</span>
+          <button class="filter-pill active" onclick="setFacTypeFilter('all', this)">🌐 الكل</button>
+          <button class="filter-pill" onclick="setFacTypeFilter('hospital', this)">🏥 المستشفيات التخصصية</button>
+          <button class="filter-pill" onclick="setFacTypeFilter('center_unit', this)">🩺 مراكز ووحدات طب الأسرة</button>
+          
+          <span style="font-size:0.82rem;color:#94a3b8;font-weight:700;margin-right:12px;margin-left:6px;">تصنيف الموضوع:</span>
+          <button class="filter-pill active" onclick="setCatFilter('all', this)">✨ كافة المواضيع</button>
+          <button class="filter-pill" onclick="setCatFilter('meds', this)">💊 الأدوية</button>
+          <button class="filter-pill" onclick="setCatFilter('waiting', this)">⏳ المواعيد والانتظار</button>
+          <button class="filter-pill" onclick="setCatFilter('diagnostics', this)">🔬 الأشعة والمعامل</button>
+          <button class="filter-pill" onclick="setCatFilter('security', this)">🛡️ الأمن والتعامل</button>
+          <button class="filter-pill" onclick="setCatFilter('referrals', this)">📑 الإحالات والتحويل</button>
+          <button class="filter-pill" onclick="setCatFilter('praise', this)">⭐ إشادات</button>
+        </div>
+      </div>
+
+      <!-- Facility Cards Container -->
+      <div id="facilityNotesCardsContainer"></div>
 
     </section>
 
