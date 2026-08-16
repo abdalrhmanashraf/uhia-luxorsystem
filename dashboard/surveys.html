@@ -16,7 +16,44 @@
 <!-- Particle Canvas -->
 <canvas id="particleCanvas"></canvas>
 
-<div class="dash-wrap">
+<!-- ══ Secure Login Screen ══ -->
+<div class="login-screen" id="loginScreen" style="display:flex;position:fixed;inset:0;background:radial-gradient(circle at center, rgba(15,23,42,0.92) 0%, rgba(6,11,24,0.98) 100%);z-index:99999;align-items:center;justify-content:center;padding:20px;">
+  <div class="glass-card" style="width:100%;max-width:420px;padding:36px 30px;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.12);border-radius:22px;box-shadow:0 25px 60px rgba(0,0,0,0.6);text-align:center;backdrop-filter:blur(24px);animation:fadeIn 0.4s ease;">
+    <div style="width:68px;height:68px;margin:0 auto 16px;background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(139,92,246,0.2));border:1px solid rgba(59,130,246,0.4);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 8px 20px rgba(59,130,246,0.25);">
+      🏥
+    </div>
+    <h1 style="font-size:1.35rem;font-weight:900;color:#f8fafc;margin-bottom:6px;">لوحة مؤشرات الاستبيانات</h1>
+    <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:24px;">الهيئة العامة للتأمين الصحي الشامل — فرع الأقصر</p>
+    
+    <div style="text-align:right;margin-bottom:16px;">
+      <label style="color:#cbd5e1;font-size:0.82rem;display:block;margin-bottom:6px;font-weight:700;">اسم المستخدم / رقم الهاتف</label>
+      <div style="position:relative;">
+        <input type="text" id="loginUsername" placeholder="ceo / rehab / admin" style="width:100%;padding:12px 14px 12px 40px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.14);border-radius:10px;color:#fff;outline:none;font-family:'Cairo',sans-serif;font-size:0.92rem;transition:border-color 0.2s;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='rgba(255,255,255,0.14)'" onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#64748b;font-size:1.1rem;">👤</span>
+      </div>
+    </div>
+
+    <div style="text-align:right;margin-bottom:20px;">
+      <label style="color:#cbd5e1;font-size:0.82rem;display:block;margin-bottom:6px;font-weight:700;">كلمة المرور</label>
+      <div style="position:relative;">
+        <input type="password" id="loginPassword" placeholder="••••••••" style="width:100%;padding:12px 14px 12px 40px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.14);border-radius:10px;color:#fff;outline:none;font-family:'Cairo',sans-serif;font-size:0.92rem;transition:border-color 0.2s;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='rgba(255,255,255,0.14)'" onkeydown="if(event.key==='Enter')doLogin()">
+        <span onclick="togglePasswordVisibility()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;cursor:pointer;font-size:1.1rem;" title="إظهار / إخفاء">👁️</span>
+      </div>
+    </div>
+
+    <div id="loginAlert" style="display:none;padding:10px 14px;border-radius:8px;font-size:0.82rem;font-weight:700;margin-bottom:16px;line-height:1.5;"></div>
+
+    <button onclick="doLogin()" id="loginBtn" style="width:100%;padding:13px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;font-weight:900;cursor:pointer;font-family:'Cairo',sans-serif;font-size:0.98rem;box-shadow:0 6px 20px rgba(59,130,246,0.4);transition:all 0.2s ease;">
+      🔐 تسجيل الدخول الآمن
+    </button>
+
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);font-size:0.75rem;color:#64748b;">
+      نظام محمي ومشفر — جلسة عمل مراقبة
+    </div>
+  </div>
+</div>
+
+<div class="dash-wrap" id="dashWrap" style="display:none;">
 
   <!-- ══ Top Navbar ══ -->
   <nav class="top-navbar">
@@ -26,9 +63,17 @@
       <a href="#" onclick="switchSection('teams',this)">👥 أداء الفرق</a>
       <a href="#" onclick="switchSection('notes',this)">📝 ملاحظات ومقترحات المنشآت</a>
     </div>
-    <div class="time-widget">
-      <h3 id="clockTime">--:--:--</h3>
-      <p id="clockDate">--/--/----</p>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="user-badge" id="navUserBadge" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;">
+        <span id="navUserAvatar" style="font-size:1.1rem;">👤</span>
+        <span id="navUserName" style="font-size:0.85rem;font-weight:700;color:#f8fafc;">المستخدم</span>
+        <span id="navUserRoleBadge" class="badge" style="background:rgba(59,130,246,0.2);color:#93c5fd;font-size:0.72rem;padding:2px 8px;border-radius:10px;">إدارة</span>
+      </div>
+      <div class="time-widget">
+        <h3 id="clockTime">--:--:--</h3>
+        <p id="clockDate">--/--/----</p>
+      </div>
+      <button onclick="doLogout()" class="btn-refresh" style="background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;padding:7px 14px;font-size:0.82rem;" title="تسجيل الخروج">🚪 خروج</button>
     </div>
   </nav>
 
@@ -527,6 +572,22 @@
     </section>
 
   </div><!-- /content-sections -->
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="custom-app-footer">
+    <div class="footer-glass-box">
+      <div class="footer-dev-badge">
+        <span class="pulse-dot"></span>
+        <span>Designed &amp; Developed by <strong>Abdalrhman Ashraf</strong></span>
+      </div>
+      <div class="footer-sub-text">
+        <span>الهيئة العامة للتأمين الصحي الشامل — فرع الأقصر</span>
+        <span class="footer-sep">•</span>
+        <span>UHIA Luxor Branch &copy; 2026</span>
+      </div>
+    </div>
+  </footer>
+
 </div><!-- /dash-wrap -->
 
 <div class="full-loading" id="fullLoading">

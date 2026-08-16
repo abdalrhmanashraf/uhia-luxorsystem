@@ -39,11 +39,25 @@ function showDashboard() {
 
 // ─── Login / Logout / Profile ───
 function doLogin() {
-  var phone = document.getElementById('phoneInput').value.trim();
+  var phone = document.getElementById('phoneInput').value.trim().toLowerCase();
   var pwd = document.getElementById('pwdInput').value.trim();
   var err = document.getElementById('loginError');
   var btn = document.getElementById('loginBtnText');
   if (!phone || !pwd) { err.innerText = 'الرجاء إدخال البيانات'; return; }
+
+  // Direct login for predefined accounts
+  var staticUsers = {
+    'ceo': { name: 'المدير التنفيذي', phone: 'ceo', role: 'admin', password: '1972' },
+    'rehab': { name: 'أ. رحاب', phone: 'rehab', role: 'admin', password: '1111' },
+    'admin': { name: 'مدير النظام', phone: 'admin', role: 'admin', password: '141999' }
+  };
+
+  if (staticUsers[phone] && staticUsers[phone].password === pwd) {
+    localStorage.setItem('uhia_user', JSON.stringify(staticUsers[phone]));
+    showDashboard();
+    return;
+  }
+
   if (!API_URL) { err.innerText = 'خطأ: رابط API غير موجود'; return; }
   err.innerText = ''; btn.innerText = 'جارٍ التحقق...';
   fetch(API_URL, { method:'POST', body:JSON.stringify({action:'login',phone:phone,password:pwd}), headers:{'Content-Type':'text/plain;charset=utf-8'} })
