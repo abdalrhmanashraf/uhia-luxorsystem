@@ -724,9 +724,6 @@ function renderFacilityNotesCards() {
         '</div>' +
       '</div>' +
 
-      '<div class="facility-summary-box">' +
-        '<strong>💡 الخلاصة التنفيذية: </strong>' + fac.summary +
-      '</div>' +
 
       '<div class="highlights-grid">' +
         highlightsHtml +
