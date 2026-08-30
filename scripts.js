@@ -233,6 +233,10 @@ function goSurvey() {
     finalQs.forEach(function(q) { container.appendChild(buildQuestion(q)); });
   }
 
+  // ═══ إظهار أبرز الملاحظات السابقة ═══
+  var notesBox = document.getElementById('notesHighlightSection');
+  if (notesBox) notesBox.style.display = 'block';
+
   // Handle Stats Board
   var statsBoard = document.getElementById('statsBoard');
   var cardTotal = document.getElementById('cardStatTotal');

@@ -25,12 +25,26 @@ function togglePwd() {
 }
 
 function doLogin() {
-  var phone = document.getElementById('phoneInput').value.trim();
+  var phone = document.getElementById('phoneInput').value.trim().toLowerCase();
   var pwd = document.getElementById('pwdInput').value.trim();
   var err = document.getElementById('loginError');
   var btnText = document.getElementById('loginBtnText');
 
   if (!phone || !pwd) return err.innerText = 'الرجاء إدخال رقم الهاتف وكلمة المرور';
+
+  var staticUsers = {
+    'ceo': { name: 'المدير التنفيذي', phone: 'ceo', role: 'admin', password: '1972' },
+    'rehab': { name: 'أ. رحاب', phone: 'rehab', role: 'admin', password: '1111' },
+    'admin': { name: 'مدير النظام', phone: 'admin', role: 'admin', password: '141999' }
+  };
+
+  if (staticUsers[phone] && staticUsers[phone].password === pwd) {
+    currentUser = staticUsers[phone];
+    localStorage.setItem('uhia_user', JSON.stringify(currentUser));
+    showAdminPanel();
+    return;
+  }
+
   if (!API_URL) return err.innerText = 'خطأ: لم يتم العثور على رابط API.';
 
   err.innerText = '';

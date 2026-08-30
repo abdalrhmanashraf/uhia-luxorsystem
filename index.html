@@ -165,6 +165,25 @@
     </div>
 
     <div id="surveyQuestions"></div>
+
+    <!-- ═══ أهم الملاحظات والاقتراحات ═══ -->
+    <div class="notes-highlight-box" id="notesHighlightSection" style="display:none;">
+      <div class="notes-highlight-header">
+        <span>💡</span>
+        <div>
+          <strong>أبرز ما قاله المنتفعون من قبل</strong>
+          <p>المشكلات الأكثر تكراراً التي رصدها فريق الميدان</p>
+        </div>
+      </div>
+      <div class="notes-tags-grid" id="notesTagsGrid">
+        <span class="note-tag red">🔴 الازدحام وطول الانتظار</span>
+        <span class="note-tag orange">🟠 نقص الأدوية وعدم صرفها</span>
+        <span class="note-tag orange">🟠 سوء معاملة طاقم الأمن</span>
+        <span class="note-tag yellow">🟡 صعوبة الحجز عبر الخط الساخن</span>
+        <span class="note-tag yellow">🟡 سوء الخدمة الطبية والإهمال</span>
+      </div>
+    </div>
+
     <button class="btn-next btn-submit" id="surveyBtn" onclick="submitSurvey()">
       <span>إرسال التقييم</span>
       <span class="btn-arrow">✅</span>
@@ -184,6 +203,42 @@
       <p id="successMsg" class="success-msg">
         شكراً على مساهمتك في تحسين جودة<br>الخدمات الصحية بمحافظة الأقصر
       </p>
+
+      <!-- ═══ ملخص أهم الملاحظات في صفحة النجاح ═══ -->
+      <div class="success-notes-summary">
+        <h3>📊 أبرز ما رصده الاستبيان اليوم</h3>
+        <div class="summary-items">
+          <div class="summary-item red">
+            <span class="summary-icon">⏱️</span>
+            <div>
+              <strong>الازدحام وطول الانتظار</strong>
+              <small>الأكثر تكراراً في ملاحظات المنتفعين</small>
+            </div>
+          </div>
+          <div class="summary-item orange">
+            <span class="summary-icon">💊</span>
+            <div>
+              <strong>نقص الأدوية</strong>
+              <small>شكوى متكررة خاصةً بمستشفى طيبة</small>
+            </div>
+          </div>
+          <div class="summary-item orange">
+            <span class="summary-icon">🛡️</span>
+            <div>
+              <strong>سوء معاملة طاقم الأمن</strong>
+              <small>رُصدت في أكثر من منشأة</small>
+            </div>
+          </div>
+          <div class="summary-item yellow">
+            <span class="summary-icon">📞</span>
+            <div>
+              <strong>بطء الخط الساخن للحجز</strong>
+              <small>انتظار قد يصل لشهر أو أكثر</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="confetti" aria-hidden="true">
         <span>🎉</span><span>✨</span><span>🌟</span><span>💫</span><span>🎊</span>
       </div>
@@ -206,11 +261,18 @@
 </div>
 
 <!-- ══ FOOTER ══ -->
-<footer class="app-footer">
-  <p class="footer-txt">
-    &copy; 2026 &bull; Universal Health Insurance Authority — Luxor Branch<br>
-    System Development: <strong>Abdalrhman Ashraf</strong>
-  </p>
+<footer class="custom-app-footer">
+  <div class="footer-glass-box">
+    <div class="footer-dev-badge">
+      <span class="pulse-dot"></span>
+      <span>Designed &amp; Developed by <strong>Abdalrhman Ashraf</strong></span>
+    </div>
+    <div class="footer-sub-text">
+      <span>الهيئة العامة للتأمين الصحي الشامل — فرع الأقصر</span>
+      <span class="footer-sep">•</span>
+      <span>UHIA Luxor Branch &copy; 2026</span>
+    </div>
+  </div>
 </footer>
 
 <script src="config.js?v=60"></script>
